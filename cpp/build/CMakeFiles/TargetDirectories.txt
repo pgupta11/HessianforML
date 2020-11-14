@@ -1,0 +1,5 @@
+/home/prachi/ml_tddft/HessCalc/cpp/build/CMakeFiles/rebuild_cache.dir
+/home/prachi/ml_tddft/HessCalc/cpp/build/CMakeFiles/edit_cache.dir
+/home/prachi/ml_tddft/HessCalc/cpp/build/CMakeFiles/Hess.dir
+/home/prachi/ml_tddft/HessCalc/cpp/build/thirdparty/pybind11/CMakeFiles/rebuild_cache.dir
+/home/prachi/ml_tddft/HessCalc/cpp/build/thirdparty/pybind11/CMakeFiles/edit_cache.dir
