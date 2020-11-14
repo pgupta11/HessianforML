@@ -13,8 +13,14 @@ typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::Triplet<double> T;
 typedef Eigen::Matrix<double, 10, 1> Mat;
 //Definitions for constructor and member functions 
-hessone(void)
+hessone(int size)
 {
+    
+}
+int add(int i, int j) {
+    printf("Adding number C++ called from the python wrapper %d %d",i,j);
+    //std::cout<< i + j<<std::endl;
+    return i+j;
 }
 void myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
     std::vector <T> tripletList;
@@ -44,6 +50,6 @@ void myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
     x = solver.solve(b);
 
     std::cout<<M<<std::endl;
-
+    //std::cout<<"print row number"<<a<<std::endl;
 }
 };
