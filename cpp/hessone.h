@@ -22,7 +22,7 @@ int add(int i, int j) {
     //std::cout<< i + j<<std::endl;
     return i+j;
 }
-SpMat myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
+Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
     std::vector <T> tripletList;
     //double a[10][10];
         // for (int i=0; i<10; i++){
@@ -39,18 +39,20 @@ SpMat myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
                 tripletList.push_back(T(i,j,a(i,j)));          
         }
     }   
-
     SpMat M(10,10);
     Mat b(10,1);
     Eigen::VectorXd x ;
-    b.setIdentity();
+    //b.setIdentity();
+    for (int i=0; i<10; i++){
+        b[i]  =1;
+    }
     M.setFromTriplets(tripletList.begin(), tripletList.end());
     Eigen::SparseQR<SpMat,Eigen::COLAMDOrdering<int>> solver;
     solver.compute(M);
     x = solver.solve(b);
 
-    //std::cout<<M<<std::endl;
+    std::cout<<b<<std::endl;
     //std::cout<<"print row number"<<a<<std::endl;
-    return M;
+    return x;
 }
 };
