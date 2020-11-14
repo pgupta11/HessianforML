@@ -22,7 +22,7 @@ int add(int i, int j) {
     //std::cout<< i + j<<std::endl;
     return i+j;
 }
-void myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
+SpMat myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
     std::vector <T> tripletList;
     //double a[10][10];
         // for (int i=0; i<10; i++){
@@ -49,7 +49,8 @@ void myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
     solver.compute(M);
     x = solver.solve(b);
 
-    std::cout<<M<<std::endl;
+    //std::cout<<M<<std::endl;
     //std::cout<<"print row number"<<a<<std::endl;
+    return M;
 }
 };
