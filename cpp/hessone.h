@@ -22,8 +22,9 @@ int add(int i, int j) {
     //std::cout<< i + j<<std::endl;
     return i+j;
 }
-Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
+Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXcd>& a){
     std::vector <T> tripletList;
+    Eigen::MatrixXd B;
     //double a[10][10];
         // for (int i=0; i<10; i++){
         //     for (int j=0; j<10; j++){
@@ -35,24 +36,26 @@ Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXd>& a){
 
     for (int i=0; i<10; i++){
         for (int j=0; j<10; j++){
-            if (a(i,j)!=0)
-                tripletList.push_back(T(i,j,a(i,j)));          
+            B(i,j) = a(i,j).real();
+            if (B(i,j)!=0)
+                tripletList.push_back(T(i,j,B(i,j)));          
         }
     }   
     SpMat M(10,10);
-    Mat b(10,1);
+    Mat c(10,1);
     Eigen::VectorXd x ;
     //b.setIdentity();
     for (int i=0; i<10; i++){
-        b[i]  =1;
+        c(i,1)  =1;
     }
     M.setFromTriplets(tripletList.begin(), tripletList.end());
-    Eigen::SparseQR<SpMat,Eigen::COLAMDOrdering<int>> solver;
+    //Eigen::SparseQR<SpMat,Eigen::COLAMDOrdering<int>> solver;
+    Eigen::LeastSquaresConjugateGradient<SpMat> solver;
     solver.compute(M);
-    x = solver.solve(b);
+    x = solver.solve(c);
 
-    std::cout<<b<<std::endl;
-    //std::cout<<"print row number"<<a<<std::endl;
+    //std::cout<<a.real()<<std::endl;
+    // //std::cout<<"print row number"<<a<<std::endl;
     return x;
 }
 };
