@@ -455,7 +455,7 @@ class LearnHam:
         h = Hess.hessone(self.nnzr,self.nnzi,self.ndof)
         # testing list 
 
-        h.add(3,4,self.allnzs)
+        h.calc(self.allnzs)
         print('python self.allnzs', self.allnzs)
 
 
