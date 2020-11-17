@@ -27,18 +27,8 @@ hessone(int real, int imag, int dofs)
     nnzi = imag;
     ndof = dofs;
 }
-// void add(int i, int j,const py::list& allnzs) {
-//     /*This is just a quick test function to check is the module is imported and its method can be used*/
-//     printf("Adding number C++ called from the python wrapper %d %d %d",i,j, i+j);
-//     /* Testing import of list*/
-//     py::list l2;
-//     std::cout<< "This is from cpp part"<<std::endl;
-//     for (auto item : allnzs)
-//         l2.append(py::cast<py::tuple>(item));
-//     py::print(l2);    
-    
-// }
-void calc(const py::list& all){
+
+void calc(const py::list& all,const Eigen::Ref<const Eigen::MatrixXd>& x){
     /* TO DO LIST
     hesslen, nall
     calculate nzrow and nzcol
@@ -49,7 +39,6 @@ void calc(const py::list& all){
         tuple<int,int> t = py::cast<tuple<int,int>>(item);
         allnzs.push_back(t);
     }
-    //py::print(allnzs);
     int nall = allnzs.size();
     cout<<"from cpp"<<nall<<endl;
     vector<int> nzrow(nall,0),nzcol(nall,0);
@@ -57,9 +46,15 @@ void calc(const py::list& all){
         nzrow[i] = get<0>(allnzs[i]);
         nzcol[i] = get<1>(allnzs[i]);
         }
-    for (int i = 0;i<nzrow.size();i++)
-        cout<<nzrow[i]<<" ";
-    cout<<"size check"<<nzrow.size()<<endl;
+    /* TO DO LIST
+    check if we can get denMO and x_inp
+    denMO-----> this has 3 axis in python code..eigen can't do that..
+    declare hesselement
+    iii??
+    tu, bc, t,u,b,c
+    declare term
+    */
+    cout<<"Did we get denMO"<< x<<endl;
 }
 Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXcd>& a){
     vector <T> tripletList;
