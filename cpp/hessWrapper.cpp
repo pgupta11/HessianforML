@@ -16,7 +16,7 @@ PYBIND11_MODULE(Hess, m) {
 
     //m.def("add", &add, "A function which adds two numbers");
     pybind11::class_<hessone>(m, "hessone")
-        .def(pybind11::init<int, int, int>())  // if the constructor takes a int double etc then it goes here <>
+        .def(pybind11::init<int, int, int, int>())  // if the constructor takes a int double etc then it goes here <>
         .def("myfunc", &hessone::myfunc)
         //.def("add", &hessone::add)
         .def("calc", &hessone::calc);

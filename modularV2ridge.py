@@ -452,7 +452,7 @@ class LearnHam:
         self.hess = inhess.copy()
         return True
     def hessfromcpp(self):
-        h = Hess.hessone(self.nnzr,self.nnzi,self.ndof)
+        h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain)
         # testing list 
 
         h.calc(self.allnzs,self.denMO_train,self.x_inp_train)
@@ -1165,11 +1165,11 @@ def computehess(lh):
     return hessmat
 
 if __name__ == '__main__':
-    mol = 'lih'
+    mol = 'heh+'
     basis = '6-31g'
     mlham = LearnHam(mol,basis,'./'+mol+'LINEAR_6-31g/')
-    mlham.load('../../data/lih/6-31g/extracted_data/')
-    mlham.loadfield('../../data/lih/6-31g/extracted_data/')
+    mlham.load('../../data/heh+/6-31g/extracted_data/')
+    mlham.loadfield('../../data/heh+/6-31g/extracted_data/')
     mlham.trainsplit()
     mlham.buildmodel()
     

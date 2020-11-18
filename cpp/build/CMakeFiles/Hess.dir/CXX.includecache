@@ -29,50 +29,20 @@ src/Core/util/ReenableStupidWarnings.h
 ../thirdparty/eigen/Eigen/Core
 src/Core/util/DisableStupidWarnings.h
 ../thirdparty/eigen/Eigen/src/Core/util/DisableStupidWarnings.h
+src/Core/util/Macros.h
+../thirdparty/eigen/Eigen/src/Core/util/Macros.h
+src/Core/util/ConfigureVectorization.h
+../thirdparty/eigen/Eigen/src/Core/util/ConfigureVectorization.h
 cuda_runtime.h
+-
+hip/hip_runtime.h
 -
 new
 -
-src/Core/util/Macros.h
-../thirdparty/eigen/Eigen/src/Core/util/Macros.h
 complex
 -
 src/Core/util/MKL_support.h
 ../thirdparty/eigen/Eigen/src/Core/util/MKL_support.h
-malloc.h
--
-immintrin.h
--
-mmintrin.h
--
-emmintrin.h
--
-xmmintrin.h
--
-pmmintrin.h
--
-tmmintrin.h
--
-smmintrin.h
--
-nmmintrin.h
--
-immintrin.h
--
-altivec.h
--
-altivec.h
--
-arm_neon.h
--
-vecintrin.h
--
-vector_types.h
--
-host_defines.h
--
-cuda_fp16.h
--
 omp.h
 -
 cerrno
@@ -101,11 +71,23 @@ climits
 -
 algorithm
 -
+array
+-
 type_traits
 -
 iostream
 -
 intrin.h
+-
+CL/sycl.hpp
+-
+map
+-
+memory
+-
+utility
+-
+thread
 -
 src/Core/util/Constants.h
 ../thirdparty/eigen/Eigen/src/Core/util/Constants.h
@@ -119,6 +101,10 @@ src/Core/util/XprHelper.h
 ../thirdparty/eigen/Eigen/src/Core/util/XprHelper.h
 src/Core/util/Memory.h
 ../thirdparty/eigen/Eigen/src/Core/util/Memory.h
+src/Core/util/IntegralConstant.h
+../thirdparty/eigen/Eigen/src/Core/util/IntegralConstant.h
+src/Core/util/SymbolicIndex.h
+../thirdparty/eigen/Eigen/src/Core/util/SymbolicIndex.h
 src/Core/NumTraits.h
 ../thirdparty/eigen/Eigen/src/Core/NumTraits.h
 src/Core/MathFunctions.h
@@ -129,42 +115,62 @@ src/Core/MathFunctionsImpl.h
 ../thirdparty/eigen/Eigen/src/Core/MathFunctionsImpl.h
 src/Core/arch/Default/ConjHelper.h
 ../thirdparty/eigen/Eigen/src/Core/arch/Default/ConjHelper.h
+src/Core/arch/Default/Half.h
+../thirdparty/eigen/Eigen/src/Core/arch/Default/Half.h
+src/Core/arch/Default/BFloat16.h
+../thirdparty/eigen/Eigen/src/Core/arch/Default/BFloat16.h
+src/Core/arch/Default/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/Default/TypeCasting.h
+src/Core/arch/Default/GenericPacketMathFunctionsFwd.h
+../thirdparty/eigen/Eigen/src/Core/arch/Default/GenericPacketMathFunctionsFwd.h
 src/Core/arch/SSE/PacketMath.h
 ../thirdparty/eigen/Eigen/src/Core/arch/SSE/PacketMath.h
-src/Core/arch/SSE/MathFunctions.h
-../thirdparty/eigen/Eigen/src/Core/arch/SSE/MathFunctions.h
+src/Core/arch/SSE/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/SSE/TypeCasting.h
+src/Core/arch/SSE/Complex.h
+../thirdparty/eigen/Eigen/src/Core/arch/SSE/Complex.h
 src/Core/arch/AVX/PacketMath.h
 ../thirdparty/eigen/Eigen/src/Core/arch/AVX/PacketMath.h
-src/Core/arch/AVX/MathFunctions.h
-../thirdparty/eigen/Eigen/src/Core/arch/AVX/MathFunctions.h
+src/Core/arch/AVX/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/AVX/TypeCasting.h
+src/Core/arch/AVX/Complex.h
+../thirdparty/eigen/Eigen/src/Core/arch/AVX/Complex.h
 src/Core/arch/AVX512/PacketMath.h
 ../thirdparty/eigen/Eigen/src/Core/arch/AVX512/PacketMath.h
+src/Core/arch/AVX512/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/AVX512/TypeCasting.h
+src/Core/arch/AVX512/Complex.h
+../thirdparty/eigen/Eigen/src/Core/arch/AVX512/Complex.h
+src/Core/arch/SSE/MathFunctions.h
+../thirdparty/eigen/Eigen/src/Core/arch/SSE/MathFunctions.h
+src/Core/arch/AVX/MathFunctions.h
+../thirdparty/eigen/Eigen/src/Core/arch/AVX/MathFunctions.h
 src/Core/arch/AVX512/MathFunctions.h
 ../thirdparty/eigen/Eigen/src/Core/arch/AVX512/MathFunctions.h
 src/Core/arch/SSE/PacketMath.h
 ../thirdparty/eigen/Eigen/src/Core/arch/SSE/PacketMath.h
+src/Core/arch/SSE/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/SSE/TypeCasting.h
 src/Core/arch/SSE/Complex.h
 ../thirdparty/eigen/Eigen/src/Core/arch/SSE/Complex.h
-src/Core/arch/SSE/MathFunctions.h
-../thirdparty/eigen/Eigen/src/Core/arch/SSE/MathFunctions.h
 src/Core/arch/AVX/PacketMath.h
 ../thirdparty/eigen/Eigen/src/Core/arch/AVX/PacketMath.h
-src/Core/arch/AVX/MathFunctions.h
-../thirdparty/eigen/Eigen/src/Core/arch/AVX/MathFunctions.h
-src/Core/arch/AVX/Complex.h
-../thirdparty/eigen/Eigen/src/Core/arch/AVX/Complex.h
 src/Core/arch/AVX/TypeCasting.h
 ../thirdparty/eigen/Eigen/src/Core/arch/AVX/TypeCasting.h
-src/Core/arch/SSE/TypeCasting.h
-../thirdparty/eigen/Eigen/src/Core/arch/SSE/TypeCasting.h
+src/Core/arch/AVX/Complex.h
+../thirdparty/eigen/Eigen/src/Core/arch/AVX/Complex.h
+src/Core/arch/SSE/MathFunctions.h
+../thirdparty/eigen/Eigen/src/Core/arch/SSE/MathFunctions.h
+src/Core/arch/AVX/MathFunctions.h
+../thirdparty/eigen/Eigen/src/Core/arch/AVX/MathFunctions.h
 src/Core/arch/SSE/PacketMath.h
 ../thirdparty/eigen/Eigen/src/Core/arch/SSE/PacketMath.h
+src/Core/arch/SSE/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/SSE/TypeCasting.h
 src/Core/arch/SSE/MathFunctions.h
 ../thirdparty/eigen/Eigen/src/Core/arch/SSE/MathFunctions.h
 src/Core/arch/SSE/Complex.h
 ../thirdparty/eigen/Eigen/src/Core/arch/SSE/Complex.h
-src/Core/arch/SSE/TypeCasting.h
-../thirdparty/eigen/Eigen/src/Core/arch/SSE/TypeCasting.h
 src/Core/arch/AltiVec/PacketMath.h
 ../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/PacketMath.h
 src/Core/arch/AltiVec/MathFunctions.h
@@ -173,6 +179,8 @@ src/Core/arch/AltiVec/Complex.h
 ../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/Complex.h
 src/Core/arch/NEON/PacketMath.h
 ../thirdparty/eigen/Eigen/src/Core/arch/NEON/PacketMath.h
+src/Core/arch/NEON/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/NEON/TypeCasting.h
 src/Core/arch/NEON/MathFunctions.h
 ../thirdparty/eigen/Eigen/src/Core/arch/NEON/MathFunctions.h
 src/Core/arch/NEON/Complex.h
@@ -183,18 +191,32 @@ src/Core/arch/ZVector/MathFunctions.h
 ../thirdparty/eigen/Eigen/src/Core/arch/ZVector/MathFunctions.h
 src/Core/arch/ZVector/Complex.h
 ../thirdparty/eigen/Eigen/src/Core/arch/ZVector/Complex.h
-src/Core/arch/CUDA/Half.h
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/Half.h
-src/Core/arch/CUDA/PacketMathHalf.h
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/PacketMathHalf.h
-src/Core/arch/CUDA/TypeCasting.h
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/TypeCasting.h
-src/Core/arch/CUDA/PacketMath.h
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/PacketMath.h
-src/Core/arch/CUDA/MathFunctions.h
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/MathFunctions.h
+src/Core/arch/MSA/PacketMath.h
+../thirdparty/eigen/Eigen/src/Core/arch/MSA/PacketMath.h
+src/Core/arch/MSA/MathFunctions.h
+../thirdparty/eigen/Eigen/src/Core/arch/MSA/MathFunctions.h
+src/Core/arch/MSA/Complex.h
+../thirdparty/eigen/Eigen/src/Core/arch/MSA/Complex.h
+src/Core/arch/GPU/PacketMath.h
+../thirdparty/eigen/Eigen/src/Core/arch/GPU/PacketMath.h
+src/Core/arch/GPU/MathFunctions.h
+../thirdparty/eigen/Eigen/src/Core/arch/GPU/MathFunctions.h
+src/Core/arch/GPU/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/GPU/TypeCasting.h
+src/Core/arch/SYCL/SyclMemoryModel.h
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/SyclMemoryModel.h
+src/Core/arch/SYCL/InteropHeaders.h
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/InteropHeaders.h
+src/Core/arch/SYCL/PacketMath.h
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/PacketMath.h
+src/Core/arch/SYCL/MathFunctions.h
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/MathFunctions.h
+src/Core/arch/SYCL/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/TypeCasting.h
 src/Core/arch/Default/Settings.h
 ../thirdparty/eigen/Eigen/src/Core/arch/Default/Settings.h
+src/Core/arch/Default/GenericPacketMathFunctions.h
+../thirdparty/eigen/Eigen/src/Core/arch/Default/GenericPacketMathFunctions.h
 src/Core/functors/TernaryFunctors.h
 ../thirdparty/eigen/Eigen/src/Core/functors/TernaryFunctors.h
 src/Core/functors/BinaryFunctors.h
@@ -209,6 +231,12 @@ src/Core/functors/AssignmentFunctors.h
 ../thirdparty/eigen/Eigen/src/Core/functors/AssignmentFunctors.h
 src/Core/arch/CUDA/Complex.h
 ../thirdparty/eigen/Eigen/src/Core/arch/CUDA/Complex.h
+src/Core/util/IndexedViewHelper.h
+../thirdparty/eigen/Eigen/src/Core/util/IndexedViewHelper.h
+src/Core/util/ReshapedHelper.h
+../thirdparty/eigen/Eigen/src/Core/util/ReshapedHelper.h
+src/Core/ArithmeticSequence.h
+../thirdparty/eigen/Eigen/src/Core/ArithmeticSequence.h
 src/Core/IO.h
 ../thirdparty/eigen/Eigen/src/Core/IO.h
 src/Core/DenseCoeffsBase.h
@@ -273,6 +301,10 @@ src/Core/Block.h
 ../thirdparty/eigen/Eigen/src/Core/Block.h
 src/Core/VectorBlock.h
 ../thirdparty/eigen/Eigen/src/Core/VectorBlock.h
+src/Core/IndexedView.h
+../thirdparty/eigen/Eigen/src/Core/IndexedView.h
+src/Core/Reshaped.h
+../thirdparty/eigen/Eigen/src/Core/Reshaped.h
 src/Core/Transpose.h
 ../thirdparty/eigen/Eigen/src/Core/Transpose.h
 src/Core/DiagonalMatrix.h
@@ -343,12 +375,16 @@ src/Core/CoreIterators.h
 ../thirdparty/eigen/Eigen/src/Core/CoreIterators.h
 src/Core/ConditionEstimator.h
 ../thirdparty/eigen/Eigen/src/Core/ConditionEstimator.h
+src/Core/arch/AltiVec/MatrixProduct.h
+../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/MatrixProduct.h
 src/Core/BooleanRedux.h
 ../thirdparty/eigen/Eigen/src/Core/BooleanRedux.h
 src/Core/Select.h
 ../thirdparty/eigen/Eigen/src/Core/Select.h
 src/Core/VectorwiseOp.h
 ../thirdparty/eigen/Eigen/src/Core/VectorwiseOp.h
+src/Core/PartialReduxEvaluator.h
+../thirdparty/eigen/Eigen/src/Core/PartialReduxEvaluator.h
 src/Core/Random.h
 ../thirdparty/eigen/Eigen/src/Core/Random.h
 src/Core/Replicate.h
@@ -357,6 +393,8 @@ src/Core/Reverse.h
 ../thirdparty/eigen/Eigen/src/Core/Reverse.h
 src/Core/ArrayWrapper.h
 ../thirdparty/eigen/Eigen/src/Core/ArrayWrapper.h
+src/Core/StlIterators.h
+../thirdparty/eigen/Eigen/src/Core/StlIterators.h
 src/Core/products/GeneralMatrixMatrix_BLAS.h
 ../thirdparty/eigen/Eigen/src/Core/products/GeneralMatrixMatrix_BLAS.h
 src/Core/products/GeneralMatrixVector_BLAS.h
@@ -567,8 +605,8 @@ src/LU/Determinant.h
 ../thirdparty/eigen/Eigen/src/LU/Determinant.h
 src/LU/InverseImpl.h
 ../thirdparty/eigen/Eigen/src/LU/InverseImpl.h
-src/LU/arch/Inverse_SSE.h
-../thirdparty/eigen/Eigen/src/LU/arch/Inverse_SSE.h
+src/LU/arch/InverseSize4.h
+../thirdparty/eigen/Eigen/src/LU/arch/InverseSize4.h
 src/Core/util/ReenableStupidWarnings.h
 ../thirdparty/eigen/Eigen/src/Core/util/ReenableStupidWarnings.h
 
@@ -753,6 +791,8 @@ SparseCore
 ../thirdparty/eigen/Eigen/SparseCore
 OrderingMethods
 ../thirdparty/eigen/Eigen/OrderingMethods
+src/Core/util/DisableStupidWarnings.h
+../thirdparty/eigen/Eigen/src/Core/util/DisableStupidWarnings.h
 src/SparseLU/SparseLU_gemm_kernel.h
 ../thirdparty/eigen/Eigen/src/SparseLU/SparseLU_gemm_kernel.h
 src/SparseLU/SparseLU_Structs.h
@@ -789,6 +829,8 @@ src/SparseLU/SparseLU_Utils.h
 ../thirdparty/eigen/Eigen/src/SparseLU/SparseLU_Utils.h
 src/SparseLU/SparseLU.h
 ../thirdparty/eigen/Eigen/src/SparseLU/SparseLU.h
+src/Core/util/ReenableStupidWarnings.h
+../thirdparty/eigen/Eigen/src/Core/util/ReenableStupidWarnings.h
 
 ../thirdparty/eigen/Eigen/SparseQR
 SparseCore
@@ -810,11 +852,11 @@ src/Core/util/ReenableStupidWarnings.h
 
 ../thirdparty/eigen/Eigen/src/Cholesky/LLT_LAPACKE.h
 
+../thirdparty/eigen/Eigen/src/Core/ArithmeticSequence.h
+
 ../thirdparty/eigen/Eigen/src/Core/Array.h
 
 ../thirdparty/eigen/Eigen/src/Core/ArrayBase.h
-../plugins/CommonCwiseUnaryOps.h
-../thirdparty/eigen/Eigen/src/plugins/CommonCwiseUnaryOps.h
 ../plugins/MatrixCwiseUnaryOps.h
 ../thirdparty/eigen/Eigen/src/plugins/MatrixCwiseUnaryOps.h
 ../plugins/ArrayCwiseUnaryOps.h
@@ -859,8 +901,14 @@ src/Core/util/ReenableStupidWarnings.h
 ../thirdparty/eigen/Eigen/src/Core/CwiseUnaryView.h
 
 ../thirdparty/eigen/Eigen/src/Core/DenseBase.h
+../plugins/CommonCwiseUnaryOps.h
+../thirdparty/eigen/Eigen/src/plugins/CommonCwiseUnaryOps.h
 ../plugins/BlockMethods.h
 ../thirdparty/eigen/Eigen/src/plugins/BlockMethods.h
+../plugins/IndexedViewMethods.h
+../thirdparty/eigen/Eigen/src/plugins/IndexedViewMethods.h
+../plugins/ReshapedMethods.h
+../thirdparty/eigen/Eigen/src/plugins/ReshapedMethods.h
 
 ../thirdparty/eigen/Eigen/src/Core/DenseCoeffsBase.h
 
@@ -886,6 +934,8 @@ src/Core/util/ReenableStupidWarnings.h
 
 ../thirdparty/eigen/Eigen/src/Core/IO.h
 
+../thirdparty/eigen/Eigen/src/Core/IndexedView.h
+
 ../thirdparty/eigen/Eigen/src/Core/Inverse.h
 
 ../thirdparty/eigen/Eigen/src/Core/Map.h
@@ -899,8 +949,6 @@ src/Core/util/ReenableStupidWarnings.h
 ../thirdparty/eigen/Eigen/src/Core/Matrix.h
 
 ../thirdparty/eigen/Eigen/src/Core/MatrixBase.h
-../plugins/CommonCwiseUnaryOps.h
-../thirdparty/eigen/Eigen/src/plugins/CommonCwiseUnaryOps.h
 ../plugins/CommonCwiseBinaryOps.h
 ../thirdparty/eigen/Eigen/src/plugins/CommonCwiseBinaryOps.h
 ../plugins/MatrixCwiseUnaryOps.h
@@ -913,6 +961,8 @@ src/Core/util/ReenableStupidWarnings.h
 ../thirdparty/eigen/Eigen/src/Core/NoAlias.h
 
 ../thirdparty/eigen/Eigen/src/Core/NumTraits.h
+
+../thirdparty/eigen/Eigen/src/Core/PartialReduxEvaluator.h
 
 ../thirdparty/eigen/Eigen/src/Core/PermutationMatrix.h
 
@@ -929,6 +979,8 @@ src/Core/util/ReenableStupidWarnings.h
 ../thirdparty/eigen/Eigen/src/Core/Ref.h
 
 ../thirdparty/eigen/Eigen/src/Core/Replicate.h
+
+../thirdparty/eigen/Eigen/src/Core/Reshaped.h
 
 ../thirdparty/eigen/Eigen/src/Core/ReturnByValue.h
 
@@ -947,6 +999,10 @@ src/Core/util/ReenableStupidWarnings.h
 ../thirdparty/eigen/Eigen/src/Core/SolverBase.h
 
 ../thirdparty/eigen/Eigen/src/Core/StableNorm.h
+atomic
+-
+
+../thirdparty/eigen/Eigen/src/Core/StlIterators.h
 
 ../thirdparty/eigen/Eigen/src/Core/Stride.h
 
@@ -972,39 +1028,75 @@ src/Core/util/ReenableStupidWarnings.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/AVX/TypeCasting.h
 
+../thirdparty/eigen/Eigen/src/Core/arch/AVX512/Complex.h
+
 ../thirdparty/eigen/Eigen/src/Core/arch/AVX512/MathFunctions.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/AVX512/PacketMath.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/AVX512/TypeCasting.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/Complex.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/MathFunctions.h
 
+../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/MatrixProduct.h
+MatrixProductCommon.h
+../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/MatrixProductCommon.h
+MatrixProductMMA.h
+../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/MatrixProductMMA.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/MatrixProductCommon.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/MatrixProductMMA.h
+
 ../thirdparty/eigen/Eigen/src/Core/arch/AltiVec/PacketMath.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/CUDA/Complex.h
 
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/Half.h
-sstream
--
-
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/MathFunctions.h
-
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/PacketMath.h
-
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/PacketMathHalf.h
-
-../thirdparty/eigen/Eigen/src/Core/arch/CUDA/TypeCasting.h
+../thirdparty/eigen/Eigen/src/Core/arch/Default/BFloat16.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/Default/ConjHelper.h
 
+../thirdparty/eigen/Eigen/src/Core/arch/Default/GenericPacketMathFunctions.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/Default/GenericPacketMathFunctionsFwd.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/Default/Half.h
+sstream
+-
+
 ../thirdparty/eigen/Eigen/src/Core/arch/Default/Settings.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/Default/TypeCasting.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/GPU/MathFunctions.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/GPU/PacketMath.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/GPU/TypeCasting.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/HIP/hcc/math_constants.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/MSA/Complex.h
+iostream
+-
+
+../thirdparty/eigen/Eigen/src/Core/arch/MSA/MathFunctions.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/MSA/PacketMath.h
+iostream
+-
+string
+-
 
 ../thirdparty/eigen/Eigen/src/Core/arch/NEON/Complex.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/NEON/MathFunctions.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/NEON/PacketMath.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/NEON/TypeCasting.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/SSE/Complex.h
 
@@ -1013,6 +1105,30 @@ sstream
 ../thirdparty/eigen/Eigen/src/Core/arch/SSE/PacketMath.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/SSE/TypeCasting.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/InteropHeaders.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/MathFunctions.h
+
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/PacketMath.h
+type_traits
+-
+
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/SyclMemoryModel.h
+CL/sycl.hpp
+-
+stdexcept
+-
+cstddef
+-
+queue
+-
+set
+-
+unordered_map
+-
+
+../thirdparty/eigen/Eigen/src/Core/arch/SYCL/TypeCasting.h
 
 ../thirdparty/eigen/Eigen/src/Core/arch/ZVector/Complex.h
 
@@ -1049,6 +1165,8 @@ stdint.h
 ../thirdparty/eigen/Eigen/src/Core/products/GeneralMatrixVector_BLAS.h
 
 ../thirdparty/eigen/Eigen/src/Core/products/Parallelizer.h
+atomic
+-
 
 ../thirdparty/eigen/Eigen/src/Core/products/SelfadjointMatrixMatrix.h
 
@@ -1078,11 +1196,61 @@ stdint.h
 
 ../thirdparty/eigen/Eigen/src/Core/util/BlasUtil.h
 
+../thirdparty/eigen/Eigen/src/Core/util/ConfigureVectorization.h
+malloc.h
+-
+immintrin.h
+-
+mmintrin.h
+-
+emmintrin.h
+-
+xmmintrin.h
+-
+pmmintrin.h
+-
+tmmintrin.h
+-
+smmintrin.h
+-
+nmmintrin.h
+-
+immintrin.h
+-
+altivec.h
+-
+altivec.h
+-
+arm_neon.h
+-
+vecintrin.h
+-
+msa.h
+-
+arm_fp16.h
+-
+immintrin.h
+-
+vector_types.h
+-
+cuda_runtime_api.h
+-
+cuda_fp16.h
+-
+hip/hip_vector_types.h
+-
+hip/hip_fp16.h
+-
+
 ../thirdparty/eigen/Eigen/src/Core/util/Constants.h
 
 ../thirdparty/eigen/Eigen/src/Core/util/DisableStupidWarnings.h
 
 ../thirdparty/eigen/Eigen/src/Core/util/ForwardDeclarations.h
+
+../thirdparty/eigen/Eigen/src/Core/util/IndexedViewHelper.h
+
+../thirdparty/eigen/Eigen/src/Core/util/IntegralConstant.h
 
 ../thirdparty/eigen/Eigen/src/Core/util/MKL_support.h
 mkl.h
@@ -1091,6 +1259,12 @@ mkl.h
 ../thirdparty/eigen/Eigen/src/misc/blas.h
 
 ../thirdparty/eigen/Eigen/src/Core/util/Macros.h
+cuda.h
+-
+hip/hip_runtime.h
+-
+cmath
+-
 cstdlib
 -
 iostream
@@ -1103,6 +1277,8 @@ cfloat
 -
 math_constants.h
 -
+Eigen/src/Core/arch/HIP/hcc/math_constants.h
+../thirdparty/eigen/Eigen/src/Core/util/Eigen/src/Core/arch/HIP/hcc/math_constants.h
 cstdint
 -
 cstdint
@@ -1110,11 +1286,13 @@ cstdint
 stdint.h
 -
 
-../thirdparty/eigen/Eigen/src/Core/util/NonMPL2.h
-
 ../thirdparty/eigen/Eigen/src/Core/util/ReenableStupidWarnings.h
 
+../thirdparty/eigen/Eigen/src/Core/util/ReshapedHelper.h
+
 ../thirdparty/eigen/Eigen/src/Core/util/StaticAssert.h
+
+../thirdparty/eigen/Eigen/src/Core/util/SymbolicIndex.h
 
 ../thirdparty/eigen/Eigen/src/Core/util/XprHelper.h
 
@@ -1228,11 +1406,9 @@ list
 
 ../thirdparty/eigen/Eigen/src/LU/PartialPivLU_LAPACKE.h
 
-../thirdparty/eigen/Eigen/src/LU/arch/Inverse_SSE.h
+../thirdparty/eigen/Eigen/src/LU/arch/InverseSize4.h
 
 ../thirdparty/eigen/Eigen/src/OrderingMethods/Amd.h
-../Core/util/NonMPL2.h
-../thirdparty/eigen/Eigen/src/Core/util/NonMPL2.h
 
 ../thirdparty/eigen/Eigen/src/OrderingMethods/Eigen_Colamd.h
 
@@ -1265,8 +1441,6 @@ Eigen_Colamd.h
 ../thirdparty/eigen/Eigen/src/SparseCholesky/SimplicialCholesky.h
 
 ../thirdparty/eigen/Eigen/src/SparseCholesky/SimplicialCholesky_impl.h
-../Core/util/NonMPL2.h
-../thirdparty/eigen/Eigen/src/Core/util/NonMPL2.h
 
 ../thirdparty/eigen/Eigen/src/SparseCore/AmbiVector.h
 
@@ -1406,9 +1580,17 @@ lapacke_mangling.h
 
 ../thirdparty/eigen/Eigen/src/plugins/CommonCwiseUnaryOps.h
 
+../thirdparty/eigen/Eigen/src/plugins/IndexedViewMethods.h
+IndexedViewMethods.h
+../thirdparty/eigen/Eigen/src/plugins/IndexedViewMethods.h
+
 ../thirdparty/eigen/Eigen/src/plugins/MatrixCwiseBinaryOps.h
 
 ../thirdparty/eigen/Eigen/src/plugins/MatrixCwiseUnaryOps.h
+
+../thirdparty/eigen/Eigen/src/plugins/ReshapedMethods.h
+ReshapedMethods.h
+../thirdparty/eigen/Eigen/src/plugins/ReshapedMethods.h
 
 ../thirdparty/pybind11/include/pybind11/attr.h
 cast.h
