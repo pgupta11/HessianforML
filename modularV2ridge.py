@@ -456,6 +456,7 @@ class LearnHam:
         # testing list 
 
         h.calc(self.allnzs,self.denMO_train,self.x_inp_train)
+        h.test()
         print('python self.allnzs', self.allnzs)
 
 

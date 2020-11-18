@@ -7,6 +7,7 @@
 #include <Eigen/SparseQR>
 #include "xtensor-python/pyarray.hpp"
 #include "xtensor/xio.hpp"
+#include <omp.h>
 namespace py = pybind11;
 using namespace std;
 class hessone
@@ -31,7 +32,22 @@ hessone(int real, int imag, int dofs, int train)
     ndof = dofs;
     ntrain = train;
 }
-
+/*TO DO--> Test open mp*/
+void test(){
+    int tid, nthreads;
+    #pragma omp parallel private(nthreads, tid)
+  {
+  /* Obtain thread number */
+  tid = omp_get_thread_num();
+  printf("Hello World from thread = %d\n", tid);
+  /* Only master thread does this */
+  if (tid == 0) 
+    {
+    nthreads = omp_get_num_threads();
+    printf("Number of threads = %d\n", nthreads);
+    }
+  }
+}
 void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
     /* TO DO LIST
     hesslen, nall
@@ -60,7 +76,7 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
     declare term
     */
     //cout<<"Density shape"<< den.shape(2)<<endl;
-    for (int iii=0; iii<nall^2; iii++){
+    for (int iii=0; iii<4; iii++){
         int tu = floor(iii/nall);// tu = iii // lh.nall
         int bc = iii % nall;// bc = iii % lh.nall
         int t = nzrow[tu];// t = lh.nzrow[tu]
@@ -69,7 +85,7 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
         int c = nzcol[bc];// c = lh.nzcol[bc]
         //CmplxMat term;
         Eigen::MatrixXcd term = Eigen::MatrixXcd::Zero(16,ntrain-2);
-
+    
     }
     
 

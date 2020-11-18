@@ -2825,6 +2825,8 @@ xtensor-python/pyarray.hpp
 /home/prachi/ml_tddft/HessCalc/cpp/xtensor-python/pyarray.hpp
 xtensor/xio.hpp
 /home/prachi/ml_tddft/HessCalc/cpp/xtensor/xio.hpp
+omp.h
+-
 
 /usr/include/python3.8/Python.h
 patchlevel.h
