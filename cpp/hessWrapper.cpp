@@ -1,12 +1,17 @@
+#define FORCE_IMPORT_ARRAY
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 #include <cstdio>
 #include <Eigen/Sparse>
 #include <Eigen/Core>
 #include <vector>
+#include "xtensor/xmath.hpp"
+#include "xtensor/xarray.hpp"
+#include "xtensor-python/pyarray.hpp"
 #include "hessone.h"
 
 PYBIND11_MODULE(Hess, m) {
+    xt::import_numpy();
     m.doc() = "Hessian in C++ wrapper for python"; // optional module docstring
 
     //m.def("add", &add, "A function which adds two numbers");

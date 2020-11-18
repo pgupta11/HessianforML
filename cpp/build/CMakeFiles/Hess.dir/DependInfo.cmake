@@ -16,6 +16,9 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../thirdparty/eigen"
+  "../thirdparty/xtensor/include"
+  "../thirdparty/xtensor-python/include"
+  "../thirdparty/xtl/include"
   "/usr/include/python3.8"
   "../thirdparty/pybind11/include"
   )

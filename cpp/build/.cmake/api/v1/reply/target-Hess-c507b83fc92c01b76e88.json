@@ -28,7 +28,7 @@
 			{
 				"command" : 1,
 				"file" : 1,
-				"line" : 7,
+				"line" : 9,
 				"parent" : 0
 			},
 			{
@@ -47,6 +47,24 @@
 				"command" : 3,
 				"file" : 1,
 				"line" : 5,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 6,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 7,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 8,
 				"parent" : 0
 			},
 			{
@@ -88,11 +106,23 @@
 				},
 				{
 					"backtrace" : 5,
+					"path" : "/home/prachi/ml_tddft/HessCalc/cpp/thirdparty/xtensor/include"
+				},
+				{
+					"backtrace" : 6,
+					"path" : "/home/prachi/ml_tddft/HessCalc/cpp/thirdparty/xtensor-python/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/prachi/ml_tddft/HessCalc/cpp/thirdparty/xtl/include"
+				},
+				{
+					"backtrace" : 8,
 					"isSystem" : true,
 					"path" : "/usr/include/python3.8"
 				},
 				{
-					"backtrace" : 5,
+					"backtrace" : 8,
 					"isSystem" : true,
 					"path" : "/home/prachi/ml_tddft/HessCalc/cpp/thirdparty/pybind11/include"
 				}

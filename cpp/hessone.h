@@ -5,6 +5,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/SparseQR>
+#include "xtensor-python/pyarray.hpp"
+#include "xtensor/xio.hpp"
 namespace py = pybind11;
 using namespace std;
 class hessone
@@ -28,7 +30,7 @@ hessone(int real, int imag, int dofs)
     ndof = dofs;
 }
 
-void calc(const py::list& all,const Eigen::Ref<const Eigen::MatrixXd>& x){
+void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
     /* TO DO LIST
     hesslen, nall
     calculate nzrow and nzcol
@@ -54,8 +56,9 @@ void calc(const py::list& all,const Eigen::Ref<const Eigen::MatrixXd>& x){
     tu, bc, t,u,b,c
     declare term
     */
-    cout<<"Did we get denMO"<< x<<endl;
+    cout<<"Density shape"<< den.shape(2)<<endl;
 }
+//This was just a test
 Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXcd>& a){
     vector <T> tripletList;
     Eigen::MatrixXd B;

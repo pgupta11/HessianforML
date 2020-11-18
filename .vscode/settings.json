@@ -63,6 +63,10 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "bitset": "cpp",
+        "cfenv": "cpp",
+        "regex": "cpp",
+        "shared_mutex": "cpp"
     }
 }
