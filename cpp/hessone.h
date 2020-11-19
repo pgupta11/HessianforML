@@ -9,7 +9,11 @@
 #include "xtensor/xio.hpp"
 #include "xtensor/xview.hpp"
 #include "xtensor/xcomplex.hpp"
+#include "xtensor/xmath.hpp"
+#include "xtensor/xoperation.hpp"
 #include <omp.h>
+#include <complex>
+#include <cmath>
 namespace py = pybind11;
 using namespace std;
 class hessone
@@ -50,6 +54,7 @@ void test(){
     }
   }
 }
+
 void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
     /* TO DO LIST
     hesslen, nall
@@ -80,7 +85,9 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
     //cout<<"Density shape"<< den.shape(2)<<endl;
     int iii,tid;
     int nallsq = nall*nall;
-    xt::pyarray<complex<double>> term;
+    xt::xarray<complex<double>> term;
+    xt::pyarray<double> term1;
+    vector< complex<double> > vec,vec1;
     //#pragma omp parallel for private(iii) //shared(den,x)
     for (iii=0; iii<nallsq; iii++){
         int tu = floor(iii/nall);// tu = iii // lh.nall
@@ -92,13 +99,22 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
         //CmplxMat term;
         //Eigen::MatrixXcd term = Eigen::MatrixXcd::Zero(16,ntrain-2);
         term = xt::zeros<complex<double>>({16, ntrain-2});
+        term1 = xt::zeros<double>({16, ntrain-2});
         /*TO DO LIST
         get term calculations conjugate ?
         */
         auto v = xt::view(term,0,xt::all());
-        auto v1 = xt::sum(xt::view(den,xt::all(),u,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);//*(t==b); 
         bool y = (t==b);
-        cout<<"y = "<<y<<endl;
+        complex<double> mycplx(5.0,1.0);
+        //auto v1 = term*5;
+        if (t==b)
+        xt::view(term,0,xt::all()) = xt::sum(xt::view(den,xt::all(),u,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);
+        else
+        xt::view(term,0,xt::all()) = 0;
+
+        //auto v2 = xt::sum(xt::view(den,xt::all(),u,xt::all())*xt::view(xt::conj(den),xt::all(),c,xt::all()),{1})*(t==b); 
+        //auto v1= term*5;
+        //cout<<"v1 = "<<v1<<endl;
     }
     
 

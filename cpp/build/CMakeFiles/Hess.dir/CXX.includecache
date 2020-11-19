@@ -2931,7 +2931,15 @@ xtensor/xview.hpp
 /home/prachi/ml_tddft/HessCalc/cpp/xtensor/xview.hpp
 xtensor/xcomplex.hpp
 /home/prachi/ml_tddft/HessCalc/cpp/xtensor/xcomplex.hpp
+xtensor/xmath.hpp
+/home/prachi/ml_tddft/HessCalc/cpp/xtensor/xmath.hpp
+xtensor/xoperation.hpp
+/home/prachi/ml_tddft/HessCalc/cpp/xtensor/xoperation.hpp
 omp.h
+-
+complex
+-
+cmath
 -
 
 /usr/include/python3.8/Python.h
