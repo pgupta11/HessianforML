@@ -456,7 +456,6 @@ class LearnHam:
         # testing list 
 
         h.calc(self.allnzs,self.denMO_train,self.x_inp_train)
-        h.test()
         print('python self.allnzs', self.allnzs)
 
 
@@ -1166,11 +1165,11 @@ def computehess(lh):
     return hessmat
 
 if __name__ == '__main__':
-    mol = 'heh+'
+    mol = 'lih'
     basis = '6-31g'
     mlham = LearnHam(mol,basis,'./'+mol+'LINEAR_6-31g/')
-    mlham.load('../../data/heh+/6-31g/extracted_data/')
-    mlham.loadfield('../../data/heh+/6-31g/extracted_data/')
+    mlham.load('../../data/lih/6-31g/extracted_data/')
+    mlham.loadfield('../../data/lih/6-31g/extracted_data/')
     mlham.trainsplit()
     mlham.buildmodel()
     

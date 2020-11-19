@@ -334,12 +334,14 @@ CMakeFiles/Hess.dir/hessWrapper.cpp.o
  ../thirdparty/xtensor/include/xtensor/xbroadcast.hpp
  ../thirdparty/xtensor/include/xtensor/xbuffer_adaptor.hpp
  ../thirdparty/xtensor/include/xtensor/xbuilder.hpp
+ ../thirdparty/xtensor/include/xtensor/xcomplex.hpp
  ../thirdparty/xtensor/include/xtensor/xcontainer.hpp
  ../thirdparty/xtensor/include/xtensor/xeval.hpp
  ../thirdparty/xtensor/include/xtensor/xexception.hpp
  ../thirdparty/xtensor/include/xtensor/xexpression.hpp
  ../thirdparty/xtensor/include/xtensor/xexpression_traits.hpp
  ../thirdparty/xtensor/include/xtensor/xfunction.hpp
+ ../thirdparty/xtensor/include/xtensor/xfunctor_view.hpp
  ../thirdparty/xtensor/include/xtensor/xgenerator.hpp
  ../thirdparty/xtensor/include/xtensor/xio.hpp
  ../thirdparty/xtensor/include/xtensor/xiterable.hpp
@@ -348,6 +350,7 @@ CMakeFiles/Hess.dir/hessWrapper.cpp.o
  ../thirdparty/xtensor/include/xtensor/xmanipulation.hpp
  ../thirdparty/xtensor/include/xtensor/xmath.hpp
  ../thirdparty/xtensor/include/xtensor/xmime.hpp
+ ../thirdparty/xtensor/include/xtensor/xoffset_view.hpp
  ../thirdparty/xtensor/include/xtensor/xoperation.hpp
  ../thirdparty/xtensor/include/xtensor/xreducer.hpp
  ../thirdparty/xtensor/include/xtensor/xrepeat.hpp
@@ -364,6 +367,8 @@ CMakeFiles/Hess.dir/hessWrapper.cpp.o
  ../thirdparty/xtensor/include/xtensor/xtensor_forward.hpp
  ../thirdparty/xtensor/include/xtensor/xtensor_simd.hpp
  ../thirdparty/xtensor/include/xtensor/xutils.hpp
+ ../thirdparty/xtensor/include/xtensor/xview.hpp
+ ../thirdparty/xtensor/include/xtensor/xview_utils.hpp
  ../thirdparty/xtl/include/xtl/xclosure.hpp
  ../thirdparty/xtl/include/xtl/xcomplex.hpp
  ../thirdparty/xtl/include/xtl/xdynamic_bitset.hpp
@@ -374,6 +379,7 @@ CMakeFiles/Hess.dir/hessWrapper.cpp.o
  ../thirdparty/xtl/include/xtl/xoptional.hpp
  ../thirdparty/xtl/include/xtl/xoptional_meta.hpp
  ../thirdparty/xtl/include/xtl/xoptional_sequence.hpp
+ ../thirdparty/xtl/include/xtl/xproxy_wrapper.hpp
  ../thirdparty/xtl/include/xtl/xsequence.hpp
  ../thirdparty/xtl/include/xtl/xspan.hpp
  ../thirdparty/xtl/include/xtl/xspan_impl.hpp

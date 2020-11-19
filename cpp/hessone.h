@@ -7,6 +7,8 @@
 #include <Eigen/SparseQR>
 #include "xtensor-python/pyarray.hpp"
 #include "xtensor/xio.hpp"
+#include "xtensor/xview.hpp"
+#include "xtensor/xcomplex.hpp"
 #include <omp.h>
 namespace py = pybind11;
 using namespace std;
@@ -76,7 +78,11 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
     declare term
     */
     //cout<<"Density shape"<< den.shape(2)<<endl;
-    for (int iii=0; iii<4; iii++){
+    int iii,tid;
+    int nallsq = nall*nall;
+    xt::pyarray<complex<double>> term;
+    //#pragma omp parallel for private(iii) //shared(den,x)
+    for (iii=0; iii<nallsq; iii++){
         int tu = floor(iii/nall);// tu = iii // lh.nall
         int bc = iii % nall;// bc = iii % lh.nall
         int t = nzrow[tu];// t = lh.nzrow[tu]
@@ -84,8 +90,15 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
         int b = nzrow[bc];// b = lh.nzrow[bc]
         int c = nzcol[bc];// c = lh.nzcol[bc]
         //CmplxMat term;
-        Eigen::MatrixXcd term = Eigen::MatrixXcd::Zero(16,ntrain-2);
-    
+        //Eigen::MatrixXcd term = Eigen::MatrixXcd::Zero(16,ntrain-2);
+        term = xt::zeros<complex<double>>({16, ntrain-2});
+        /*TO DO LIST
+        get term calculations conjugate ?
+        */
+        auto v = xt::view(term,0,xt::all());
+        auto v1 = xt::sum(xt::view(den,xt::all(),u,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);//*(t==b); 
+        bool y = (t==b);
+        cout<<"y = "<<y<<endl;
     }
     
 
