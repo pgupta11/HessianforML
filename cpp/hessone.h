@@ -19,7 +19,7 @@ using namespace std;
 class hessone
 {
 private:
-int nnzr,nnzi,ndof,hesslen,nall,ntrain;
+int nnzr,nnzi,ndof,hesslen,nall,ntrain,drc;
 public:
 typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::Triplet<double> T;
@@ -27,7 +27,7 @@ typedef Eigen::Matrix<double, 10, 1> Mat;
 //typedef Eigen::Matrix<complex<double>, 16, ntrain-2> CmplxMat;
 typedef vector< tuple<int,int> > TupleList;
 //Definitions for constructor and member functions 
-hessone(int real, int imag, int dofs, int train)
+hessone(int real, int imag, int dofs, int train, int rowcolumn)
 {
 
   /* 
@@ -37,6 +37,7 @@ hessone(int real, int imag, int dofs, int train)
     nnzi = imag;
     ndof = dofs;
     ntrain = train;
+    drc = rowcolumn;
 }
 /*TO DO--> Test open mp*/
 void test(){
@@ -55,16 +56,24 @@ void test(){
   }
 }
 
-void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
+void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
     /* TO DO LIST
     hesslen, nall
     calculate nzrow and nzcol
     */
     hesslen = nnzr*(nnzr+1)+nnzi*nnzi;
-    TupleList allnzs;
+    TupleList allnzs,realnzs,imagnzs;
     for (auto item : all){
         tuple<int,int> t = py::cast<tuple<int,int>>(item);
         allnzs.push_back(t);
+    }
+    for (auto item : realdof){
+        tuple<int,int> t = py::cast<tuple<int,int>>(item);
+        realnzs.push_back(t);
+    }
+    for (auto item : imagdof){
+        tuple<int,int> t = py::cast<tuple<int,int>>(item);
+        imagnzs.push_back(t);
     }
     int nall = allnzs.size();
     cout<<"from cpp"<<nall<<endl;
@@ -73,6 +82,27 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
         nzrow[i] = get<0>(allnzs[i]);
         nzcol[i] = get<1>(allnzs[i]);
         }
+
+    /*TO DO LIST
+    *create equivalent of self.nzreals,nzrealm
+    */
+    xt::xarray<int> nzrealm, nzimagm;
+    nzrealm = -xt::ones<int>({drc,drc});
+    nzimagm = -xt::ones<int>({drc,drc});
+    int cnt = 0;
+    for (int k=0; k<realnzs.size();k++){
+        int i = get<0>(realnzs[k]);
+        int j = get<1>(realnzs[k]);
+        nzrealm(i,j) = cnt;
+        cnt +=1;
+    }
+    for (int k=0; k<imagnzs.size();k++){
+        int i = get<0>(imagnzs[k]);
+        int j = get<1>(imagnzs[k]);
+        nzimagm(i,j) = cnt;
+        cnt +=1;
+    }
+    cout<<"nzimagm"<<nzimagm<<endl;
     /* TO DO LIST
     check if we can get denMO and x_inp
     denMO-----> this has 3 axis in python code..eigen can't do that..xtensor is used for
@@ -86,8 +116,6 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
     int iii,tid;
     int nallsq = nall*nall;
     xt::xarray<complex<double>> term;
-    xt::pyarray<double> term1;
-    vector< complex<double> > vec,vec1;
     //#pragma omp parallel for private(iii) //shared(den,x)
     for (iii=0; iii<nallsq; iii++){
         int tu = floor(iii/nall);// tu = iii // lh.nall
@@ -99,7 +127,6 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
         //CmplxMat term;
         //Eigen::MatrixXcd term = Eigen::MatrixXcd::Zero(16,ntrain-2);
         term = xt::zeros<complex<double>>({16, ntrain-2});
-        term1 = xt::zeros<double>({16, ntrain-2});
         /*TO DO LIST
         get term calculations conjugate ?
         */
@@ -117,7 +144,6 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
         xt::view(term,3,xt::all()) = -xt::view(den,xt::all(),u,b)*xt::conj(xt::view(den,xt::all(),t,c));
         else
         xt::view(term,3,xt::all()) = 0;
-        cout<<"term"<<term<<endl;
         /*-------------------------------------------------------------------------------------------------------------------------*/
         if ((u==b)*(t<u))
         xt::view(term,4,xt::all()) = xt::sum(xt::view(den,xt::all(),t,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);
@@ -166,8 +192,13 @@ void calc(const py::list& all,xt::pyarray<complex<double>>& den,xt::pyarray<doub
         xt::view(term,15,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),u)*xt::conj(xt::view(den,xt::all(),xt::all(),c)),1);
         else
         xt::view(term,15,xt::all()) = 0;
+        //cout<<"term"<<term<<endl;
         /*----------------------------------------------------------------------------------------------------------------------------*/
-
+        for (int s=0; s<ndof; s++){
+            for (int a=0; a<ndof; a++){
+            
+            }    
+        }
     }
     
 

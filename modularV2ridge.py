@@ -126,14 +126,13 @@ class LearnHam:
             self.nzreals[i] = cnt
             self.nzrealm[i[0],i[1]] = cnt
             cnt += 1
-
         self.nzimags = {}
         self.nzimagm = -np.ones((self.drc,self.drc),dtype=np.int32)
         for i in self.imagnzs:
             self.nzimags[i] = cnt
             self.nzimagm[i[0],i[1]] = cnt
             cnt += 1
-
+        print('From python',self.nzimagm)
         # need all of the following for our fast Hessian assembler
         self.nnzr = len(self.nzreals)
         self.nnzi = len(self.nzimags)
@@ -452,11 +451,11 @@ class LearnHam:
         self.hess = inhess.copy()
         return True
     def hessfromcpp(self):
-        h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain)
+        h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain,self.drc)
         # testing list 
 
-        h.calc(self.allnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
-        print('python self.allnzs', self.allnzs)
+        h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
+        #print('python self.allnzs', self.allnzs)
 
 
     # TRAIN AND SAVE theta TO DISK
