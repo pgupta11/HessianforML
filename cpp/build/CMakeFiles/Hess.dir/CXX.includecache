@@ -2925,6 +2925,8 @@ Eigen/SparseQR
 -
 xtensor-python/pyarray.hpp
 /home/prachi/ml_tddft/HessCalc/cpp/xtensor-python/pyarray.hpp
+xtensor/xtensor.hpp
+-
 xtensor/xio.hpp
 /home/prachi/ml_tddft/HessCalc/cpp/xtensor/xio.hpp
 xtensor/xview.hpp
@@ -2935,6 +2937,8 @@ xtensor/xmath.hpp
 /home/prachi/ml_tddft/HessCalc/cpp/xtensor/xmath.hpp
 xtensor/xoperation.hpp
 /home/prachi/ml_tddft/HessCalc/cpp/xtensor/xoperation.hpp
+xtensor/xarray.hpp
+/home/prachi/ml_tddft/HessCalc/cpp/xtensor/xarray.hpp
 omp.h
 -
 complex

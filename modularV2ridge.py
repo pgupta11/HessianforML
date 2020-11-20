@@ -132,7 +132,6 @@ class LearnHam:
             self.nzimags[i] = cnt
             self.nzimagm[i[0],i[1]] = cnt
             cnt += 1
-        print('From python',self.nzimagm)
         # need all of the following for our fast Hessian assembler
         self.nnzr = len(self.nzreals)
         self.nnzi = len(self.nzimags)
@@ -145,7 +144,6 @@ class LearnHam:
         for i in range(self.nall):
             self.nzrow[i] = self.allnzs[i][0]
             self.nzcol[i] = self.allnzs[i][1]
-        
         # create a matrix that can be used for fast evaluation of exact Coulomb and exchange terms
         self.eemat = np.zeros((self.drc**2,self.drc**2), dtype=np.complex128)
         for a in range(self.drc**2):

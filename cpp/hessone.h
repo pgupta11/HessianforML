@@ -6,11 +6,13 @@
 #include <Eigen/Dense>
 #include <Eigen/SparseQR>
 #include "xtensor-python/pyarray.hpp"
+#include <xtensor/xtensor.hpp>
 #include "xtensor/xio.hpp"
 #include "xtensor/xview.hpp"
 #include "xtensor/xcomplex.hpp"
 #include "xtensor/xmath.hpp"
 #include "xtensor/xoperation.hpp"
+#include "xtensor/xarray.hpp"
 #include <omp.h>
 #include <complex>
 #include <cmath>
@@ -61,6 +63,11 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
     hesslen, nall
     calculate nzrow and nzcol
     */
+   xt::xtensor<complex<double>,2> a = {
+    { complex<double>(1, 1), complex<double>(-1, 1), complex<double>(-2, -2) },
+    { complex<double>(-1, 0), complex<double>(0, 1), complex<double>(2, 2) }};
+    //complex<double> tvar(-1,1);
+    // does not work compile array: cout<<xt::real(a)<<endl;
     hesslen = nnzr*(nnzr+1)+nnzi*nnzi;
     TupleList allnzs,realnzs,imagnzs;
     for (auto item : all){
@@ -102,7 +109,6 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
         nzimagm(i,j) = cnt;
         cnt +=1;
     }
-    cout<<"nzimagm"<<nzimagm<<endl;
     /* TO DO LIST
     check if we can get denMO and x_inp
     denMO-----> this has 3 axis in python code..eigen can't do that..xtensor is used for
@@ -116,6 +122,7 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
     int iii,tid;
     int nallsq = nall*nall;
     xt::xarray<complex<double>> term;
+    xt::xarray<double> hesselement;
     //#pragma omp parallel for private(iii) //shared(den,x)
     for (iii=0; iii<nallsq; iii++){
         int tu = floor(iii/nall);// tu = iii // lh.nall
@@ -194,8 +201,21 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
         xt::view(term,15,xt::all()) = 0;
         //cout<<"term"<<term<<endl;
         /*----------------------------------------------------------------------------------------------------------------------------*/
+        int row00,col00;
         for (int s=0; s<ndof; s++){
             for (int a=0; a<ndof; a++){
+                if ((s==0)&&(a==0)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                    row00 = nzrealm(t,u);
+                    col00 = nzrealm(b,c);
+                    //Eigen::MatrixXcd s;
+                    //cout<<"cpp-->row00"<<row00<<endl;
+                    complex<double> s;
+                    s = xt::sum(term)[0];
+                    // cout<<"sum"<<s<<endl;
+                    hesselement(row00,col00) = 2*xt::real(s);
+                    cout<<"try" <<hesselement(row00,col00)<<endl;
+                    //xt::real(xt::sum(term));
+                }
             
             }    
         }
