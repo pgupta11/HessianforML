@@ -16,8 +16,19 @@
 #include <omp.h>
 #include <complex>
 #include <cmath>
+#include <complex>
+#include <type_traits>
 namespace py = pybind11;
 using namespace std;
+/*------------------since * is missing -------------------------------------------*/
+// template< typename T, typename SCALAR > inline
+// typename std::enable_if< !std::is_same<T,SCALAR>::value, std::complex<T> >::type
+// operator* ( const std::complex<T>& c, SCALAR n ) { return c * T(n) ; }
+
+// template< typename T, typename SCALAR > inline
+// typename std::enable_if< !std::is_same<T,SCALAR>::value, std::complex<T> >::type
+// operator* ( SCALAR n, const std::complex<T>& c ) { return T(n) * c ; }
+/*------------------since * is missing -------------------------------------------*/
 class hessone
 {
 private:
@@ -121,8 +132,16 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
     //cout<<"Density shape"<< den.shape(2)<<endl;
     int iii,tid;
     int nallsq = nall*nall;
+    std::complex<double> myiota {0, 1};
     xt::xarray<complex<double>> term;
     xt::xarray<double> hesselement;
+    xt::xarray<complex<double>>stars_s = {{1,1,1,1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1}};
+    xt::xarray<complex<double>>stars_a={{-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1}};
+    xt::xarray<complex<double>>stars_sa;
+    stars_s = xt::transpose(stars_s);
+    stars_a = xt::transpose(stars_a);
+    stars_sa = stars_s * stars_a;
+    cout<<"stars_s"<<stars_s<<endl;
     //#pragma omp parallel for private(iii) //shared(den,x)
     for (iii=0; iii<nallsq; iii++){
         int tu = floor(iii/nall);// tu = iii // lh.nall
@@ -201,21 +220,40 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
         xt::view(term,15,xt::all()) = 0;
         //cout<<"term"<<term<<endl;
         /*----------------------------------------------------------------------------------------------------------------------------*/
-        int row00,col00;
+        int row00,col00,row01,col01,row02,col02,row11,col11;
+        xt::xarray<complex<double>> term01, term02, term11;
         for (int s=0; s<ndof; s++){
             for (int a=0; a<ndof; a++){
                 if ((s==0)&&(a==0)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                    // no extra factor for 00 block
                     row00 = nzrealm(t,u);
                     col00 = nzrealm(b,c);
-                    //Eigen::MatrixXcd s;
-                    //cout<<"cpp-->row00"<<row00<<endl;
-                    complex<double> s;
-                    s = xt::sum(term)[0];
-                    // cout<<"sum"<<s<<endl;
-                    hesselement(row00,col00) = 2*xt::real(s);
-                    cout<<"try" <<hesselement(row00,col00)<<endl;
-                    //xt::real(xt::sum(term));
-                }
+                    hesselement(row00,col00) = 2*xt::real(xt::sum(term)[0]);
+                    }
+                if ((s==0)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                    // work on the 01 block
+                    term01 = term*x[xt::all(),a];
+                    row01 = nzrealm(t,u);
+                    col01 = (a+1)*nnzr+nzrealm(b,c);
+                    hesselement(row01,col01) = 2*xt::real(xt::sum(term01)[0]);
+                    }
+                if ((s==0)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                    // work on the 02 block
+                    // need a star pattern for index a
+                    term02 = term*stars_a;
+                    term02 = term02*(myiota)*xt::view(x,xt::all(),a);
+                    row02 = nzrealm(t,u);
+                    col02 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
+                    hesselement(row02,col02) = 2*xt::real(xt::sum(term02)[0]);
+                    }
+                if ((s<nnzr)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                    // overall factor for 11 block
+    
+                    term11 = term*xt::view(x,xt::all(),a);
+                    row11 = (s+1)*nnzr+nzrealm(t,u);
+                    col11 = (a+1)*nnzr+nzrealm(b,c);
+                    hesselement(row11,col11) = 2*xt::real(xt::sum(term11)[0]);
+                    }
             
             }    
         }
