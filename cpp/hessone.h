@@ -20,6 +20,7 @@
 #include <type_traits>
 namespace py = pybind11;
 using namespace std;
+using namespace xt::placeholders;  // required for `_` to work
 /*------------------since * is missing -------------------------------------------*/
 // template< typename T, typename SCALAR > inline
 // typename std::enable_if< !std::is_same<T,SCALAR>::value, std::complex<T> >::type
@@ -74,11 +75,6 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
     hesslen, nall
     calculate nzrow and nzcol
     */
-   xt::xtensor<complex<double>,2> a = {
-    { complex<double>(1, 1), complex<double>(-1, 1), complex<double>(-2, -2) },
-    { complex<double>(-1, 0), complex<double>(0, 1), complex<double>(2, 2) }};
-    //complex<double> tvar(-1,1);
-    // does not work compile array: cout<<xt::real(a)<<endl;
     hesslen = nnzr*(nnzr+1)+nnzi*nnzi;
     TupleList allnzs,realnzs,imagnzs;
     for (auto item : all){
@@ -220,8 +216,8 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
         xt::view(term,15,xt::all()) = 0;
         //cout<<"term"<<term<<endl;
         /*----------------------------------------------------------------------------------------------------------------------------*/
-        int row00,col00,row01,col01,row02,col02,row11,col11;
-        xt::xarray<complex<double>> term01, term02, term11;
+        int row00,col00,row01,col01,row02,col02,row11,col11,row12,col12,row22,col22;
+        xt::xarray<complex<double>> term01, term02, term11, term12,term22;
         for (int s=0; s<ndof; s++){
             for (int a=0; a<ndof; a++){
                 if ((s==0)&&(a==0)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
@@ -248,18 +244,40 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
                     }
                 if ((s<nnzr)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // overall factor for 11 block
-    
                     term11 = term*xt::view(x,xt::all(),a);
                     row11 = (s+1)*nnzr+nzrealm(t,u);
                     col11 = (a+1)*nnzr+nzrealm(b,c);
                     hesselement(row11,col11) = 2*xt::real(xt::sum(term11)[0]);
                     }
+                if ((s<nnzr)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                    // work on the 12 block
+                    // here we need to use the star pattern for index a
+                    term12 = term*stars_a;
+                    term12 = term12*xt::view(x,xt::all(),s)*(myiota)*xt::view(x,xt::all(),a);
+                    row12 = (s+1)*nnzr+nzrealm(t,u);
+                    col12 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
+                    hesselement(row12,col12) = 2*xt::real(xt::sum(term12)[0]);
+                    }
+                if ((s>=nnzr)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                    // work on the 22 block
+                    // here we need to use the star pattern for index s and a
+                    term22 = term*stars_sa;
+                    term22 = term22*(myiota)*xt::view(x,xt::all(),s)*(myiota)*xt::view(x,xt::all(),a);
+                    row22 = nnzr*nnzr+(s-nnzr)*nnzi+nzimagm(t,u);
+                    col22 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
+                    hesselement(row22,col22) = 2*xt::real(xt::sum(term22)[0]);
+                    }
             
             }    
         }
     }
-    
-
+    //std::vector<size_t> shape = { hesslen,hesslen };
+    //xt::xarray<double,xt::layout_type::dynamic> hessmat (shape);
+    xt::xarray<double> hessmat;
+    //hessmat = hesselement;
+    xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hesselement,xt::range(0,nnzr),xt::range(nnzr,_)));
+    xt::view(hessmat,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))) = xt::transpose(xt::view(hesselement,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))));
+    cout<<"Hessian Matrix"<<hessmat<<endl;
 }
 //This was just a test
 Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXcd>& a){
