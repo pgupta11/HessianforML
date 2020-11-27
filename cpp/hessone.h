@@ -131,6 +131,7 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
     std::complex<double> myiota {0, 1};
     xt::xarray<complex<double>> term;
     xt::xarray<double> hesselement;
+    hesselement = xt::zeros<double>({hesslen,hesslen});
     xt::xarray<complex<double>>stars_s = {{1,1,1,1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1}};
     xt::xarray<complex<double>>stars_a={{-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1}};
     xt::xarray<complex<double>>stars_sa;
@@ -274,10 +275,25 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
     //std::vector<size_t> shape = { hesslen,hesslen };
     //xt::xarray<double,xt::layout_type::dynamic> hessmat (shape);
     xt::xarray<double> hessmat;
-    //hessmat = hesselement;
+    hessmat = xt::zeros<double>({hesslen,hesslen});
+    // hessmat = hesselement;
     xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hesselement,xt::range(0,nnzr),xt::range(nnzr,_)));
-    xt::view(hessmat,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))) = xt::transpose(xt::view(hesselement,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))));
+    xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)) = xt::transpose(xt::view(hesselement,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))));
     cout<<"Hessian Matrix"<<hessmat<<endl;
+    // xt::xarray<double> ar1,ar2,ar3,ar4;
+    // ar1 = xt::view(hesselement,xt::range(0,nnzr),xt::range(nnzr,_));
+    // ar2 = xt::transpose(xt::view(hesselement,xt::range(0,nnzr),xt::range(nnzr,_)));
+    // ar3 = xt::view(hesselement,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1)));
+    // ar4 = xt::transpose(xt::view(hesselement,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))));
+    // auto&& ar1shape = ar1.shape();
+    // auto&& ar2shape = ar2.shape();
+    // auto&& ar3shape = ar3.shape();
+    // auto&& ar4shape = ar4.shape();
+    // copy(ar1shape.cbegin(), ar1shape.cend(), ostream_iterator<unsigned long>(cout, ", "));
+    // copy(ar2shape.cbegin(), ar2shape.cend(), ostream_iterator<unsigned long>(cout, ", "));
+    // copy(ar3shape.cbegin(), ar3shape.cend(), ostream_iterator<unsigned long>(cout, ", "));
+    // copy(ar4shape.cbegin(), ar4shape.cend(), ostream_iterator<unsigned long>(cout, ", "));
+    
 }
 //This was just a test
 Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXcd>& a){
