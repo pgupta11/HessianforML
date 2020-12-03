@@ -71,9 +71,9 @@ void test(){
 }
 
 xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
-    /* TO DO LIST
-    hesslen, nall
-    calculate nzrow and nzcol
+    /* TO DO LIST--->Debug
+    hesslen, nall, allzs-->cout << "("<<get<0>(t) << " " << get<1>(t)<<")"<<endl;
+    verify nzrow and nzcol
     */
     hesslen = nnzr*(nnzr+1)+nnzi*nnzi;
     TupleList allnzs,realnzs,imagnzs;
@@ -90,7 +90,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
         imagnzs.push_back(t);
     }
     int nall = allnzs.size();
-    cout<<"from cpp"<<nall<<endl;
+    //cout<<"from cpp"<<nall<<"nnzr"<<nnzr<<"nnzi"<<nnzi<<"ndof"<<ndof<<endl;
     vector<int> nzrow(nall,0),nzcol(nall,0);
     for (int i = 0;i<nzrow.size();i++){
         nzrow[i] = get<0>(allnzs[i]);
@@ -116,16 +116,11 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
         nzimagm(i,j) = cnt;
         cnt +=1;
     }
-    /* TO DO LIST
-    check if we can get denMO and x_inp
-    denMO-----> this has 3 axis in python code..eigen can't do that..xtensor is used for
-    that
-    declare hesselement
-    iii---> goes over range(nall**2)
-    tu, bc, t,u,b,c
-    declare term
+    /*
+    Debug: checked following:
+    cout<<"Checking nzrealm" <<nzrealm<<endl;
+    cout<<"Checking nzimagm" <<nzimagm<<endl;
     */
-    //cout<<"Density shape"<< den.shape(2)<<endl;
     int iii,tid;
     int nallsq = nall*nall;
     std::complex<double> myiota {0, 1};
@@ -138,7 +133,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
     stars_s = xt::transpose(stars_s);
     stars_a = xt::transpose(stars_a);
     stars_sa = stars_s * stars_a;
-    cout<<"stars_s"<<stars_s<<endl;
+    cout<<"stars_sa"<<stars_sa<<endl;
     //#pragma omp parallel for private(iii) //shared(den,x)
     for (iii=0; iii<nallsq; iii++){
         int tu = floor(iii/nall);// tu = iii // lh.nall
@@ -250,7 +245,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     col11 = (a+1)*nnzr+nzrealm(b,c);
                     hesselement(row11,col11) = 2*xt::real(xt::sum(term11)[0]);
                     }
-                if ((s<nnzr)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                if ((s<nnzr)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzimagm(b,c)>=0)){
                     // work on the 12 block
                     // here we need to use the star pattern for index a
                     term12 = term*stars_a;
@@ -277,8 +272,8 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
     xt::pyarray<double> hessmat;
     hessmat = xt::zeros<double>({hesslen,hesslen});
     hessmat = hesselement;
-    xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hesselement,xt::range(0,nnzr),xt::range(nnzr,_)));
-    xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)) = xt::transpose(xt::view(hesselement,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))));
+    xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hessmat,xt::range(0,nnzr),xt::range(nnzr,_)));
+    xt::view(hessmat,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))) = xt::transpose(xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)));
     //cout<<"Hessian Matrix"<<hessmat<<endl;
     return hessmat;  
 }

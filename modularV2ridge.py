@@ -1186,8 +1186,8 @@ if __name__ == '__main__':
     # set the Jacobian inside the object 
     #mlham.setjac(myjac)
 
-    # if you've already computed the Jacobian, you can obtain the Hessian
-    # using the following beautiful formula
+    #if you've already computed the Jacobian, you can obtain the Hessian
+    #using the following beautiful formula
     #hess2 = 2.0*np.conj(myjac.T) @ myjac
     
     # function outside LearnHam class that computes the Hessian
@@ -1197,12 +1197,12 @@ if __name__ == '__main__':
     mlham.sethess(hess)
     mlham.hessfromcpp()
 
-#     print('difference between two ways to compute Hessian:')
-    #print(np.linalg.norm(hess - cpphess))
-#     print('******')
-    # mlham.trainmodel()
-    # print('Training loss',mlham.trainloss)
-    # print('Grad loss',mlham.gradloss)
+    #print('difference between two ways to compute Hessian:')
+    #print(np.linalg.norm(hess - hess2))
+    #print('******')
+    #mlham.trainmodel()
+    #print('Training loss',mlham.trainloss)
+    #print('Grad loss',mlham.gradloss)
     
     # mlham.plottrainfits()
     # mlham.plotvalidfits()
