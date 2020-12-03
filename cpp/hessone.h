@@ -70,7 +70,7 @@ void test(){
   }
 }
 
-void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
+xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
     /* TO DO LIST
     hesslen, nall
     calculate nzrow and nzcol
@@ -172,16 +172,16 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
         xt::view(term,4,xt::all()) = xt::sum(xt::view(den,xt::all(),t,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);
         else
         xt::view(term,4,xt::all()) = 0;
-        if ((u==c)*(t<u))
+        if ((u==c)*(t<u)*(b<c))
         xt::view(term,5,xt::all()) = xt::sum(xt::view(den,xt::all(),t,xt::all())*xt::conj(xt::view(den,xt::all(),b,xt::all())),1);
         else
         xt::view(term,5,xt::all()) = 0;
         if (t<u)
-        xt::view(term,6,xt::all()) = -xt::view(den,xt::all(),u,c)*xt::conj(xt::view(den,xt::all(),u,b));
+        xt::view(term,6,xt::all()) = -xt::view(den,xt::all(),t,c)*xt::conj(xt::view(den,xt::all(),u,b));
         else
         xt::view(term,6,xt::all()) = 0;
         if ((t<u)*(b<c))
-        xt::view(term,7,xt::all()) = -xt::view(den,xt::all(),u,b)*xt::conj(xt::view(den,xt::all(),u,c));
+        xt::view(term,7,xt::all()) = -xt::view(den,xt::all(),t,b)*xt::conj(xt::view(den,xt::all(),u,c));
         else
         xt::view(term,7,xt::all()) = 0;
         /*------------------------------------------------------------------------------------------------------------------------*/
@@ -245,7 +245,7 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
                     }
                 if ((s<nnzr)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // overall factor for 11 block
-                    term11 = term*xt::view(x,xt::all(),a);
+                    term11 = term*xt::view(x,xt::all(),s)*xt::view(x,xt::all(),a);
                     row11 = (s+1)*nnzr+nzrealm(t,u);
                     col11 = (a+1)*nnzr+nzrealm(b,c);
                     hesselement(row11,col11) = 2*xt::real(xt::sum(term11)[0]);
@@ -274,26 +274,13 @@ void calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt
     }
     //std::vector<size_t> shape = { hesslen,hesslen };
     //xt::xarray<double,xt::layout_type::dynamic> hessmat (shape);
-    xt::xarray<double> hessmat;
+    xt::pyarray<double> hessmat;
     hessmat = xt::zeros<double>({hesslen,hesslen});
-    // hessmat = hesselement;
+    hessmat = hesselement;
     xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hesselement,xt::range(0,nnzr),xt::range(nnzr,_)));
     xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)) = xt::transpose(xt::view(hesselement,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))));
-    cout<<"Hessian Matrix"<<hessmat<<endl;
-    // xt::xarray<double> ar1,ar2,ar3,ar4;
-    // ar1 = xt::view(hesselement,xt::range(0,nnzr),xt::range(nnzr,_));
-    // ar2 = xt::transpose(xt::view(hesselement,xt::range(0,nnzr),xt::range(nnzr,_)));
-    // ar3 = xt::view(hesselement,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1)));
-    // ar4 = xt::transpose(xt::view(hesselement,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))));
-    // auto&& ar1shape = ar1.shape();
-    // auto&& ar2shape = ar2.shape();
-    // auto&& ar3shape = ar3.shape();
-    // auto&& ar4shape = ar4.shape();
-    // copy(ar1shape.cbegin(), ar1shape.cend(), ostream_iterator<unsigned long>(cout, ", "));
-    // copy(ar2shape.cbegin(), ar2shape.cend(), ostream_iterator<unsigned long>(cout, ", "));
-    // copy(ar3shape.cbegin(), ar3shape.cend(), ostream_iterator<unsigned long>(cout, ", "));
-    // copy(ar4shape.cbegin(), ar4shape.cend(), ostream_iterator<unsigned long>(cout, ", "));
-    
+    //cout<<"Hessian Matrix"<<hessmat<<endl;
+    return hessmat;  
 }
 //This was just a test
 Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXcd>& a){

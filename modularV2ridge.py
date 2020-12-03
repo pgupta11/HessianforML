@@ -452,8 +452,14 @@ class LearnHam:
         h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain,self.drc)
         # testing list 
 
-        h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
+        self.hesscpp = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
         #print('python self.allnzs', self.allnzs)
+        print('HesscppPy',np.linalg.norm(self.hess-self.hesscpp))
+        #print('Hess Py',self.hess)
+        #print('Hess cpp',self.hesscpp)
+        np.savetxt('Hesscpp.txt', self.hesscpp, fmt="%8f")
+        np.savetxt('HessPy.txt', self.hess, fmt="%8f")
+        return True
 
 
     # TRAIN AND SAVE theta TO DISK
@@ -1186,14 +1192,14 @@ if __name__ == '__main__':
     
     # function outside LearnHam class that computes the Hessian
     # does not need and does not compute either the gradient or the Jacobian
-    #hess = computehess(mlham)
+    hess = computehess(mlham)
     # set the Hessian inside the object
-    #mlham.sethess(hess)
+    mlham.sethess(hess)
+    mlham.hessfromcpp()
 
 #     print('difference between two ways to compute Hessian:')
-#     print(np.linalg.norm(hess - hess2))
+    #print(np.linalg.norm(hess - cpphess))
 #     print('******')
-    mlham.hessfromcpp()
     # mlham.trainmodel()
     # print('Training loss',mlham.trainloss)
     # print('Grad loss',mlham.gradloss)
