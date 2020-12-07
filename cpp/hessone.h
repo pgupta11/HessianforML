@@ -121,7 +121,6 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
     cout<<"Checking nzrealm" <<nzrealm<<endl;
     cout<<"Checking nzimagm" <<nzimagm<<endl;
     */
-    int iii,tid;
     int nallsq = nall*nall;
     std::complex<double> myiota {0, 1};
     xt::xarray<complex<double>> term;
@@ -135,6 +134,16 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
     stars_sa = stars_s * stars_a;
     cout<<"stars_sa"<<stars_sa<<endl;
     //#pragma omp parallel for private(iii) //shared(den,x)
+    int iii,tid,nthreads,s,a;
+    #pragma omp parallel shared(hesselement,nthreads) private(tid,s,a,iii,term)
+    {
+        tid = omp_get_thread_num();
+        if (tid == 0){
+        nthreads = omp_get_num_threads();
+        printf("Starting with %d threads\n",nthreads);
+        printf("Term calculation...\n");
+        }
+    #pragma omp for
     for (iii=0; iii<nallsq; iii++){
         int tu = floor(iii/nall);// tu = iii // lh.nall
         int bc = iii % nall;// bc = iii % lh.nall
@@ -214,8 +223,9 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
         /*----------------------------------------------------------------------------------------------------------------------------*/
         int row00,col00,row01,col01,row02,col02,row11,col11,row12,col12,row22,col22;
         xt::xarray<complex<double>> term01, term02, term11, term12,term22;
-        for (int s=0; s<ndof; s++){
-            for (int a=0; a<ndof; a++){
+        printf("Thread %d Hesselement calculation...\n",tid);
+        for (s=0; s<ndof; s++){
+            for (a=0; a<ndof; a++){
                 if ((s==0)&&(a==0)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // no extra factor for 00 block
                     row00 = nzrealm(t,u);
@@ -267,6 +277,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
             
             }    
         }
+    }
     }
     //std::vector<size_t> shape = { hesslen,hesslen };
     //xt::xarray<double,xt::layout_type::dynamic> hessmat (shape);

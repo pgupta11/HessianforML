@@ -451,8 +451,9 @@ class LearnHam:
     def hessfromcpp(self):
         h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain,self.drc)
         # testing list 
-
+        start = time.time()
         self.hesscpp = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
+        print('cpp calculation for Hessian',time.time()-start)
         #print('python self.allnzs', self.allnzs)
         print('HesscppPy',np.linalg.norm(self.hess-self.hesscpp))
         #print('Hess Py',self.hess)
