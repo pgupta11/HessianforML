@@ -228,8 +228,9 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     row01 = nzrealm(t,u);
                     col01 = (a+1)*nnzr+nzrealm(b,c);
                     hesselement(row01,col01) = 2*xt::real(xt::sum(term01)[0]);
+                    //if(hesselement(row01,col01)==0) cout<<"row01,col01"<<row01<<","<<col01<<endl;
                     }
-                if ((s==0)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                if ((s==0)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzimagm(b,c)>=0)){
                     // work on the 02 block
                     // need a star pattern for index a
                     term02 = term*stars_a;
@@ -254,7 +255,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     col12 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
                     hesselement(row12,col12) = 2*xt::real(xt::sum(term12)[0]);
                     }
-                if ((s>=nnzr)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
+                if ((s>=nnzr)&&(a>=nnzr)&&(nzimagm(t,u)>=0)&&(nzimagm(b,c)>=0)){
                     // work on the 22 block
                     // here we need to use the star pattern for index s and a
                     term22 = term*stars_sa;
