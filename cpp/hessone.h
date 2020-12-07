@@ -224,7 +224,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     }
                 if ((s==0)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // work on the 01 block
-                    term01 = term*x[xt::all(),a];
+                    term01 = term*xt::view(x,xt::all(),a);
                     row01 = nzrealm(t,u);
                     col01 = (a+1)*nnzr+nzrealm(b,c);
                     hesselement(row01,col01) = 2*xt::real(xt::sum(term01)[0]);
