@@ -2,9 +2,14 @@
 #include <pybind11/eigen.h>
 #include <vector>
 #include <iostream>
+#include <chrono>
+#include <ctime>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/SparseQR>
+#define XTENSOR_USE_OPENMP
+#define XTENSOR_USE_XSIMD
+#include "xsimd/xsimd.hpp"
 #include "xtensor-python/pyarray.hpp"
 #include <xtensor/xtensor.hpp>
 #include "xtensor/xio.hpp"
@@ -123,18 +128,19 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
     */
     int nallsq = nall*nall;
     std::complex<double> myiota {0, 1};
-    xt::xarray<complex<double>> term;
-    xt::xarray<double> hesselement;
-    hesselement = xt::zeros<double>({hesslen,hesslen});
+    xt::xtensor<complex<double>,2> term;
+    xt::xtensor<double,2> hesselement;
+    hesselement = xt::eval(xt::zeros<double>({hesslen,hesslen}));
     xt::xarray<complex<double>>stars_s = {{1,1,1,1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1}};
     xt::xarray<complex<double>>stars_a={{-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1}};
     xt::xarray<complex<double>>stars_sa;
-    stars_s = xt::transpose(stars_s);
-    stars_a = xt::transpose(stars_a);
+    stars_s = xt::eval(xt::transpose(stars_s));
+    stars_a = xt::eval(xt::transpose(stars_a));
     stars_sa = stars_s * stars_a;
-    cout<<"stars_sa"<<stars_sa<<endl;
+    //cout<<"stars_sa"<<stars_sa<<endl;
     //#pragma omp parallel for private(iii) //shared(den,x)
     int iii,tid,nthreads,s,a;
+    auto t_start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel shared(hesselement,nthreads) private(tid,s,a,iii,term)
     {
         tid = omp_get_thread_num();
@@ -220,10 +226,11 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
         else
         xt::view(term,15,xt::all()) = 0;
         //cout<<"term"<<term<<endl;
+        term = xt::eval(term);
         /*----------------------------------------------------------------------------------------------------------------------------*/
         int row00,col00,row01,col01,row02,col02,row11,col11,row12,col12,row22,col22;
-        xt::xarray<complex<double>> term01, term02, term11, term12,term22;
-        printf("Thread %d Hesselement calculation...\n",tid);
+        xt::xtensor<complex<double>,2> term01, term02, term11, term12,term22;
+        //printf("Thread %d Hesselement calculation...\n",tid);
         for (s=0; s<ndof; s++){
             for (a=0; a<ndof; a++){
                 if ((s==0)&&(a==0)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
@@ -231,6 +238,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     row00 = nzrealm(t,u);
                     col00 = nzrealm(b,c);
                     hesselement(row00,col00) = 2*xt::real(xt::sum(term)[0]);
+                    //hesselement(row00,col00) = 2*xt::sum(xt::real(term))[0];
                     }
                 if ((s==0)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // work on the 01 block
@@ -238,6 +246,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     row01 = nzrealm(t,u);
                     col01 = (a+1)*nnzr+nzrealm(b,c);
                     hesselement(row01,col01) = 2*xt::real(xt::sum(term01)[0]);
+                    //hesselement(row01,col01) = 2*xt::sum(xt::real(term01))[0];
                     //if(hesselement(row01,col01)==0) cout<<"row01,col01"<<row01<<","<<col01<<endl;
                     }
                 if ((s==0)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzimagm(b,c)>=0)){
@@ -245,6 +254,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     // need a star pattern for index a
                     term02 = term*stars_a;
                     term02 = term02*(myiota)*xt::view(x,xt::all(),a);
+                    //term02 = xt::eval(term02);
                     row02 = nzrealm(t,u);
                     col02 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
                     hesselement(row02,col02) = 2*xt::real(xt::sum(term02)[0]);
@@ -252,6 +262,7 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                 if ((s<nnzr)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // overall factor for 11 block
                     term11 = term*xt::view(x,xt::all(),s)*xt::view(x,xt::all(),a);
+                    //term11 = xt::eval(term11);
                     row11 = (s+1)*nnzr+nzrealm(t,u);
                     col11 = (a+1)*nnzr+nzrealm(b,c);
                     hesselement(row11,col11) = 2*xt::real(xt::sum(term11)[0]);
@@ -278,7 +289,10 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
             }    
         }
     }
+        
     }
+    auto t_end = std::chrono::high_resolution_clock::now();
+    cout<<"Wall clock time passed: " << std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
     //std::vector<size_t> shape = { hesslen,hesslen };
     //xt::xarray<double,xt::layout_type::dynamic> hessmat (shape);
     xt::pyarray<double> hessmat;

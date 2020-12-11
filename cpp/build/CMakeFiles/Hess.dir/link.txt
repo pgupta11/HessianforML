@@ -1,1 +1,1 @@
-/usr/bin/c++ -fPIC  -fopenmp -flto -shared  -o Hess.cpython-38-x86_64-linux-gnu.so CMakeFiles/Hess.dir/hessWrapper.cpp.o 
+/usr/bin/c++ -fPIC  -O3 -fopenmp -flto -shared  -o Hess.cpython-38-x86_64-linux-gnu.so CMakeFiles/Hess.dir/hessWrapper.cpp.o 

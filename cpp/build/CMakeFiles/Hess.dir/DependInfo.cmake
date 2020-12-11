@@ -19,6 +19,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../thirdparty/xtensor/include"
   "../thirdparty/xtensor-python/include"
   "../thirdparty/xtl/include"
+  "../thirdparty/xsimd/include"
   "/usr/include/python3.8"
   "../thirdparty/pybind11/include"
   )

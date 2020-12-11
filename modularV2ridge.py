@@ -136,6 +136,7 @@ class LearnHam:
         self.nnzr = len(self.nzreals)
         self.nnzi = len(self.nzimags)
         self.hesslen = self.nnzr*(self.nnzr+1) + self.nnzi**2
+        print('hesslen',self.hesslen)
         self.ndof = cnt
         self.allnzs = list(set(self.realnzs + self.imagnzs))
         self.nall = len(self.allnzs)
@@ -460,6 +461,7 @@ class LearnHam:
         #print('Hess cpp',self.hesscpp)
         np.savetxt('Hesscpp.txt', self.hesscpp, fmt="%8f")
         np.savetxt('HessPy.txt', self.hess, fmt="%8f")
+        print('Matrix Rank',np.linalg.matrix_rank(self.hess))
         return True
 
 

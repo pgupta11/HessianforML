@@ -28,7 +28,7 @@
 			{
 				"command" : 1,
 				"file" : 1,
-				"line" : 13,
+				"line" : 14,
 				"parent" : 0
 			},
 			{
@@ -68,6 +68,12 @@
 				"parent" : 0
 			},
 			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 13,
+				"parent" : 0
+			},
+			{
 				"command" : 2,
 				"file" : 0,
 				"line" : 153,
@@ -81,7 +87,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : " -fopenmp -fPIC -fvisibility=hidden  "
+					"fragment" : " -O3 -fopenmp -fPIC -fvisibility=hidden  "
 				},
 				{
 					"backtrace" : 3,
@@ -118,11 +124,15 @@
 				},
 				{
 					"backtrace" : 8,
+					"path" : "/home/prachi/ml_tddft/HessCalc/cpp/thirdparty/xsimd/include"
+				},
+				{
+					"backtrace" : 9,
 					"isSystem" : true,
 					"path" : "/usr/include/python3.8"
 				},
 				{
-					"backtrace" : 8,
+					"backtrace" : 9,
 					"isSystem" : true,
 					"path" : "/home/prachi/ml_tddft/HessCalc/cpp/thirdparty/pybind11/include"
 				}
