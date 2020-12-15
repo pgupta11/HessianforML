@@ -75,7 +75,7 @@ void test(){
   }
 }
 
-Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
+xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
     /* TO DO LIST--->Debug
     hesslen, nall, allzs-->cout << "("<<get<0>(t) << " " << get<1>(t)<<")"<<endl;
     verify nzrow and nzcol
@@ -129,9 +129,9 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
     int nallsq = nall*nall;
     std::complex<double> myiota {0, 1};
     xt::xtensor<complex<double>,2> term;
-    //xt::xtensor<double,2> hesselement; 
-    vector <T> tripletList; 
-    //hesselement = xt::eval(xt::zeros<double>({hesslen,hesslen}));
+    xt::xtensor<double,2> hesselement; 
+    vector <T> tripletList;
+    hesselement = xt::eval(xt::zeros<double>({hesslen,hesslen}));
     xt::xtensor<complex<double>,2>stars_s = {{1,1,1,1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1}};
     xt::xtensor<complex<double>,2>stars_a={{-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1}};
     xt::xtensor<complex<double>,2>stars_sa;
@@ -142,16 +142,16 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
     //#pragma omp parallel for private(iii) //shared(den,x)
     int iii,tid,nthreads,s,a;
     auto t_start = std::chrono::high_resolution_clock::now();
-    #pragma omp parallel shared(nthreads) private(tid,s,a,iii,term)
+    #pragma omp parallel shared(hesselement,nthreads) private(tid,s,a,iii,term)
     {
         tid = omp_get_thread_num();
-        //omp_set_num_threads(2);
+        omp_set_num_threads(2);
         if (tid == 0){   
         nthreads = omp_get_num_threads();
         printf("Starting with %d threads\n",nthreads);
         printf("Term calculation...\n");
         }
-    #pragma omp for 
+    #pragma omp for
     for (iii=0; iii<nallsq; iii++){
         int tu = floor(iii/nall);// tu = iii // lh.nall
         int bc = iii % nall;// bc = iii % lh.nall
@@ -239,23 +239,17 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
                     // no extra factor for 00 block
                     row00 = nzrealm(t,u);
                     col00 = nzrealm(b,c);
-                    double hesselement = 2*xt::real(xt::sum(term)[0]);
-                    //cout<<hesselement<<endl;
-                    if (hesselement!=0){
-    #pragma omp critical
-                        tripletList.push_back(T(row00,col00,hesselement));}
+                    hesselement(row00,col00) = 2*xt::real(xt::sum(term)[0]);
+                    if (hesselement(row00,col00)!=0)
+                        tripletList.push_back(T(row00,col00,hesselement(row00,col00)));
                     }
                 if ((s==0)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // work on the 01 block
                     term01 = term*xt::view(x,xt::all(),a);
                     row01 = nzrealm(t,u);
                     col01 = (a+1)*nnzr+nzrealm(b,c);
-                    double hesselement = 2*xt::real(xt::sum(term01)[0]);
-                    if (hesselement!=0){
-    #pragma omp critical
-                        tripletList.push_back(T(row01,col01,hesselement));}
+                    hesselement(row01,col01) = 2*xt::real(xt::sum(term01)[0]);
                     }
-                    
                 if ((s==0)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzimagm(b,c)>=0)){
                     // work on the 02 block
                     // need a star pattern for index a
@@ -263,23 +257,15 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
                     term02 = term02*(myiota)*xt::view(x,xt::all(),a);
                     row02 = nzrealm(t,u);
                     col02 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
-                    double hesselement = 2*xt::real(xt::sum(term02)[0]);
-                    if (hesselement!=0){
-    #pragma omp critical
-                        tripletList.push_back(T(row02,col02,hesselement));}
+                    hesselement(row02,col02) = 2*xt::real(xt::sum(term02)[0]);
                     }
-                    
                 if ((s<nnzr)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // overall factor for 11 block
                     term11 = term*xt::view(x,xt::all(),s)*xt::view(x,xt::all(),a);
                     row11 = (s+1)*nnzr+nzrealm(t,u);
                     col11 = (a+1)*nnzr+nzrealm(b,c);
-                    double hesselement = 2*xt::real(xt::sum(term11)[0]);
-                    if (hesselement!=0){
-    #pragma omp critical
-                        tripletList.push_back(T(row11,col11,hesselement));}
+                    hesselement(row11,col11) = 2*xt::real(xt::sum(term11)[0]);
                     }
-                    
                 if ((s<nnzr)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzimagm(b,c)>=0)){
                     // work on the 12 block
                     // here we need to use the star pattern for index a
@@ -287,12 +273,8 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
                     term12 = term12*xt::view(x,xt::all(),s)*(myiota)*xt::view(x,xt::all(),a);
                     row12 = (s+1)*nnzr+nzrealm(t,u);
                     col12 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
-                    double hesselement = 2*xt::real(xt::sum(term12)[0]);
-                    if (hesselement!=0){
-    #pragma omp critical
-                        tripletList.push_back(T(row12,col12,hesselement));}
+                    hesselement(row12,col12) = 2*xt::real(xt::sum(term12)[0]);
                     }
-                    
                 if ((s>=nnzr)&&(a>=nnzr)&&(nzimagm(t,u)>=0)&&(nzimagm(b,c)>=0)){
                     // work on the 22 block
                     // here we need to use the star pattern for index s and a
@@ -300,37 +282,28 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
                     term22 = term22*(myiota)*xt::view(x,xt::all(),s)*(myiota)*xt::view(x,xt::all(),a);
                     row22 = nnzr*nnzr+(s-nnzr)*nnzi+nzimagm(t,u);
                     col22 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
-                    double hesselement = 2*xt::real(xt::sum(term22)[0]);
-                    if (hesselement!=0){
-    #pragma omp critical
-                        tripletList.push_back(T(row22,col22,hesselement));}
+                    hesselement(row22,col22) = 2*xt::real(xt::sum(term22)[0]);
                     }
-                    
             
             }    
         }
     }
         
-    } //end of parallel region
-    SpMat M(hesslen,hesslen),M1(hesslen,hesslen);
-    Eigen::MatrixXd M2(hesslen,hesslen);
-    cout<<"here"<<endl;
+    }
+    SpMat M;
     M.setFromTriplets(tripletList.begin(), tripletList.end());
-    //M1 = matrixXd(M);
-    M1 = M.selfadjointView<Eigen::Upper>(); 
-    cout<<"Sparse Matrix"<<M1<<endl;
-    M2 = Eigen::MatrixXd(M1);
+
     auto t_end = std::chrono::high_resolution_clock::now();
     cout<<"Wall clock time passed: " << std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
     //std::vector<size_t> shape = { hesslen,hesslen };
     //xt::xarray<double,xt::layout_type::dynamic> hessmat (shape);
     xt::pyarray<double> hessmat;
     hessmat = xt::zeros<double>({hesslen,hesslen});
-    // hessmat = hesselement;
-    // xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hessmat,xt::range(0,nnzr),xt::range(nnzr,_)));
-    // xt::view(hessmat,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))) = xt::transpose(xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)));
+    hessmat = hesselement;
+    xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hessmat,xt::range(0,nnzr),xt::range(nnzr,_)));
+    xt::view(hessmat,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))) = xt::transpose(xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)));
     //cout<<"Hessian Matrix"<<hessmat<<endl;
-    return M2;  
+    return hessmat;  
 }
 //This was just a test
 Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXcd>& a){
