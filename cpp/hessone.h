@@ -130,6 +130,7 @@ Eigen::VectorXd calc(const py::list& all,const py::list& realdof,const py::list&
     stars_a = xt::eval(xt::transpose(stars_a));
     stars_sa = stars_s * stars_a;
     int iii,tid,nthreads,s,a;
+    SpMat M(hesslen,hesslen);
     auto t_start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel shared(nthreads) private(tid,s,a,iii,term)
     {
@@ -225,7 +226,7 @@ Eigen::VectorXd calc(const py::list& all,const py::list& realdof,const py::list&
                     col00 = nzrealm(b,c);
                     double hesselement = 2*xt::real(xt::sum(term)[0]);
                     //cout<<hesselement<<endl;
-                    if (hesselement!=0){
+                    if (abs(hesselement)>1e-12){
     #pragma omp critical
                         tripletList.push_back(T(row00,col00,hesselement));}
                     }
@@ -235,7 +236,7 @@ Eigen::VectorXd calc(const py::list& all,const py::list& realdof,const py::list&
                     row01 = nzrealm(t,u);
                     col01 = (a+1)*nnzr+nzrealm(b,c);
                     double hesselement = 2*xt::real(xt::sum(term01)[0]);
-                    if (hesselement!=0){
+                    if (abs(hesselement)>1e-12){
     #pragma omp critical
                         tripletList.push_back(T(row01,col01,hesselement));}
                     }
@@ -248,7 +249,7 @@ Eigen::VectorXd calc(const py::list& all,const py::list& realdof,const py::list&
                     row02 = nzrealm(t,u);
                     col02 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
                     double hesselement = 2*xt::real(xt::sum(term02)[0]);
-                    if (hesselement!=0){
+                    if (abs(hesselement)>1e-12){
     #pragma omp critical
                         tripletList.push_back(T(row02,col02,hesselement));}
                     }
@@ -259,7 +260,7 @@ Eigen::VectorXd calc(const py::list& all,const py::list& realdof,const py::list&
                     row11 = (s+1)*nnzr+nzrealm(t,u);
                     col11 = (a+1)*nnzr+nzrealm(b,c);
                     double hesselement = 2*xt::real(xt::sum(term11)[0]);
-                    if (hesselement!=0){
+                    if (abs(hesselement)>1e-12){
     #pragma omp critical
                         tripletList.push_back(T(row11,col11,hesselement));}
                     }
@@ -272,7 +273,7 @@ Eigen::VectorXd calc(const py::list& all,const py::list& realdof,const py::list&
                     row12 = (s+1)*nnzr+nzrealm(t,u);
                     col12 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
                     double hesselement = 2*xt::real(xt::sum(term12)[0]);
-                    if (hesselement!=0){
+                    if (abs(hesselement)>1e-12){
     #pragma omp critical
                         tripletList.push_back(T(row12,col12,hesselement));}
                     }
@@ -296,7 +297,7 @@ Eigen::VectorXd calc(const py::list& all,const py::list& realdof,const py::list&
     }
         
     } //end of parallel region
-    SpMat M(hesslen,hesslen);
+    
     M.setFromTriplets(tripletList.begin(), tripletList.end());
     //M1 = M.selfadjointView<Eigen::Upper>(); 
     //M2 = Eigen::MatrixXd(M1);
