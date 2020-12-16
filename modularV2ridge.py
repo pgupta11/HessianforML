@@ -453,15 +453,17 @@ class LearnHam:
         h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain,self.drc)
         # testing list 
         start = time.time()
-        self.hesscpp = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
+        self.theta = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:],self.grad)
         print('cpp calculation for Hessian',time.time()-start)
         #print('python self.allnzs', self.allnzs)
-        print('HesscppPy',np.linalg.norm(self.hess-self.hesscpp))
+        #print('HesscppPy',np.linalg.norm(self.theta-self.thetacpp))
         #print('Hess Py',self.hess)
         #print('Hess cpp',self.hesscpp)
-        np.savetxt('Hesscpp.txt', self.hesscpp, fmt="%8f")
-        np.savetxt('HessPy.txt', self.hess, fmt="%8f")
-        print('Matrix Rank',np.linalg.matrix_rank(self.hess))
+        np.savetxt('Thetacpp.txt', self.blocktheta(self.theta), fmt="%8f")
+        #np.savetxt('HessPy.txt', self.hess, fmt="%8f")
+        self.qmat = self.computeqmat(self.theta)
+        self.gradloss = np.linalg.norm(computegrad(self))
+        self.trainloss = self.newloss(self.theta)
         return True
 
 
@@ -472,39 +474,39 @@ class LearnHam:
         theta0 = np.zeros(self.lentheta)        
         
         # solve least squares minimization problem
-#         self.theta,_,_,_ = sl.lstsq(self.hess, -self.grad, lapack_driver='gelsy')
+        self.theta,_,_,_ = sl.lstsq(self.hess, -self.grad, lapack_driver='gelsy')
         
         #Lasso/Ridge 
-        print("Computing regularization ...")
-        resid = (1J)*self.denMO_train_dot - (1J)*self.newpred(theta0)
-        res = self.complex2real(resid).reshape(-1)
-        jac = np.zeros(shape=(npts,self.drc,self.drc,self.lentheta),dtype=np.complex)
-        for j in range(0,npts):
-            for m in range(0,self.drc):
-                for n in range(0,self.drc):
-                    jac[j,m,n,:] = self.jac[j*(self.drc**2)+m*self.drc+n,:]
-        jac_r = np.real(jac[:,self.rnzl[0],self.rnzl[1],:])
-        jac_i = np.imag(jac[:,self.inzl[0],self.inzl[1],:]) 
-        jac_n = np.hstack([jac_r,jac_i]).reshape(-1,self.lentheta)
+        # print("Computing regularization ...")
+        # resid = (1J)*self.denMO_train_dot - (1J)*self.newpred(theta0)
+        # res = self.complex2real(resid).reshape(-1)
+        # jac = np.zeros(shape=(npts,self.drc,self.drc,self.lentheta),dtype=np.complex)
+        # for j in range(0,npts):
+        #     for m in range(0,self.drc):
+        #         for n in range(0,self.drc):
+        #             jac[j,m,n,:] = self.jac[j*(self.drc**2)+m*self.drc+n,:]
+        # jac_r = np.real(jac[:,self.rnzl[0],self.rnzl[1],:])
+        # jac_i = np.imag(jac[:,self.inzl[0],self.inzl[1],:]) 
+        # jac_n = np.hstack([jac_r,jac_i]).reshape(-1,self.lentheta)
 #         # Lars path algorithm
 #         alphas, _, coefs = linear_model.lars_path(jac_n, -res, method='lasso',verbose= True, alpha_min=-1)
 #         self.theta = coefs.T[-1]
 #         print('alphas',alphas)
         
         # Try Ridge 
-        ridge = linear_model.RidgeCV(alphas=(np.logspace(-6,6,50)))   
-        ridge.fit(jac_n, -res)
-        print('Ridge Coeffcients',ridge.coef_)
-        print('Alpha Values',ridge.alpha_)
-        self.theta = ridge.coef_
+        # ridge = linear_model.RidgeCV(alphas=(np.logspace(-6,6,50)))   
+        # ridge.fit(jac_n, -res)
+        # print('Ridge Coeffcients',ridge.coef_)
+        # print('Alpha Values',ridge.alpha_)
+        # self.theta = ridge.coef_
         # Save theta to a text file 
         np.savetxt(self.outpath+'theta.txt', self.blocktheta(self.theta), fmt="%8f")
         # save training loss
-        self.trainloss = self.newloss(self.theta)
+        #self.trainloss = self.newloss(self.theta)
         
         # update qmat and compute norm of gradient of loss at new theta value
-        self.qmat = self.computeqmat(self.theta)
-        self.gradloss = np.linalg.norm(computegrad(self))
+        #self.qmat = self.computeqmat(self.theta)
+        #self.gradloss = np.linalg.norm(computegrad(self))
         
         # check newpred function
         # resid = (1J)*self.denMO_train_dot - (1J)*self.newpred(self.theta)
@@ -769,7 +771,7 @@ class LearnHam:
     # here we compare the two trajectories GRAPHICALLY
     def graphcomparetraj(self, traj1, traj2, groundtruth, myfigsize=(8,16), includeField=False, fname='prop.pdf', mytitle=None):
 
-        nplots=15
+        nplots=16
         if self.ndof <= nplots:
             fig = plt.figure(figsize=(myfigsize))
             mylabels = []
@@ -1180,9 +1182,9 @@ if __name__ == '__main__':
     mlham.buildmodel()
     
     # function outside LearnHam class that computes the gradient
-    #mygrad = computegrad(mlham)
+    mygrad = computegrad(mlham)
     # set the gradient inside the object
-    #mlham.setgrad(mygrad)
+    mlham.setgrad(mygrad)
 
     # function outside LearnHam class that computes the Jacobian
     #myjac = computejac(mlham)
@@ -1195,17 +1197,18 @@ if __name__ == '__main__':
     
     # function outside LearnHam class that computes the Hessian
     # does not need and does not compute either the gradient or the Jacobian
-    hess = computehess(mlham)
+    #hess = computehess(mlham)
     # set the Hessian inside the object
-    mlham.sethess(hess)
-    mlham.hessfromcpp()
+    #mlham.sethess(hess)
+    
 
     #print('difference between two ways to compute Hessian:')
     #print(np.linalg.norm(hess - hess2))
     #print('******')
     #mlham.trainmodel()
-    #print('Training loss',mlham.trainloss)
-    #print('Grad loss',mlham.gradloss)
+    mlham.hessfromcpp()
+    print('Training loss',mlham.trainloss)
+    print('Grad loss',mlham.gradloss)
     
     # mlham.plottrainfits()
     # mlham.plotvalidfits()
@@ -1213,36 +1216,36 @@ if __name__ == '__main__':
     # mlham.plottrainhamerr()
 
     # propagate using ML Hamiltonian with no field
-    #MLsol = mlham.propagate(mlham.MLhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
+    MLsol = mlham.propagate(mlham.MLhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
 
     # propagate using Exact Hamiltonian with no field
-    #EXsol = mlham.propagate(mlham.EXhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
+    EXsol = mlham.propagate(mlham.EXhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
 
     # quantitatively and graphically compare the trajectories we just obtained against denMO
     # bigger figure for LiH
-    # err = mlham.quantcomparetraj(MLsol, EXsol, mlham.denMO)
-    # print('MLsol,EXsol,..',err)
-    # if mol == 'lih':
-    #     fs = (8,16)
-    # else:
-    #     fs = (8,12)
-    # mlham.graphcomparetraj(MLsol, EXsol, mlham.denMO, fs)
+    err = mlham.quantcomparetraj(MLsol, EXsol, mlham.denMO)
+    print('MLsol,EXsol,..',err)
+    if mol == 'lih':
+        fs = (8,16)
+    else:
+        fs = (8,12)
+    mlham.graphcomparetraj(MLsol, EXsol, mlham.denMO, fs)
 
-    # # propagate using ML Hamiltonian with field
-    # MLsolWF = mlham.propagate(mlham.MLhamwfrhs, mlham.fielddenMOflat[mlham.offset,:], mytol=1e-10)
+    # propagate using ML Hamiltonian with field
+    MLsolWF = mlham.propagate(mlham.MLhamwfrhs, mlham.fielddenMOflat[mlham.offset,:], mytol=1e-10)
 
-    # # propagate using Exact Hamiltonian with field
-    # EXsolWF = mlham.propagate(mlham.EXhamwfrhs, mlham.fielddenMOflat[mlham.offset,:], mytol=1e-10)
+    # propagate using Exact Hamiltonian with field
+    EXsolWF = mlham.propagate(mlham.EXhamwfrhs, mlham.fielddenMOflat[mlham.offset,:], mytol=1e-10)
     
-    # # quantitatively and graphically compare the trajectories we just obtained against denMO
-    # # bigger figure for LiH
-    # errWF = mlham.quantcomparetraj(MLsolWF, EXsolWF, mlham.fielddenMO, 'tdHamerrWF.npz')
-    # print('With field',errWF)
-    # if mol == 'lih':
-    #     fs = (8,16)
-    #     infl = False
-    # else:
-    #     fs = (8,12)
-    #     infl = True
-    # mlham.graphcomparetraj(MLsolWF, EXsolWF, mlham.fielddenMO, fs, infl, 'propWF.pdf')
+    # quantitatively and graphically compare the trajectories we just obtained against denMO
+    # bigger figure for LiH
+    errWF = mlham.quantcomparetraj(MLsolWF, EXsolWF, mlham.fielddenMO, 'tdHamerrWF.npz')
+    print('With field',errWF)
+    if mol == 'lih':
+        fs = (8,16)
+        infl = False
+    else:
+        fs = (8,12)
+        infl = True
+    mlham.graphcomparetraj(MLsolWF, EXsolWF, mlham.fielddenMO, fs, infl, 'propWF.pdf')
 

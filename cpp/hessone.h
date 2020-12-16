@@ -75,7 +75,7 @@ void test(){
   }
 }
 
-Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
+Eigen::VectorXd calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x,Eigen::VectorXd grad){
     /* TO DO LIST--->Debug
     hesslen, nall, allzs-->cout << "("<<get<0>(t) << " " << get<1>(t)<<")"<<endl;
     verify nzrow and nzcol
@@ -95,16 +95,12 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
         imagnzs.push_back(t);
     }
     int nall = allnzs.size();
-    //cout<<"from cpp"<<nall<<"nnzr"<<nnzr<<"nnzi"<<nnzi<<"ndof"<<ndof<<endl;
     vector<int> nzrow(nall,0),nzcol(nall,0);
     for (int i = 0;i<nzrow.size();i++){
         nzrow[i] = get<0>(allnzs[i]);
         nzcol[i] = get<1>(allnzs[i]);
         }
 
-    /*TO DO LIST
-    *create equivalent of self.nzreals,nzrealm
-    */
     xt::xtensor<int,2> nzrealm, nzimagm;
     nzrealm = -xt::ones<int>({drc,drc});
     nzimagm = -xt::ones<int>({drc,drc});
@@ -121,11 +117,6 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
         nzimagm(i,j) = cnt;
         cnt +=1;
     }
-    /*
-    Debug: checked following:
-    cout<<"Checking nzrealm" <<nzrealm<<endl;
-    cout<<"Checking nzimagm" <<nzimagm<<endl;
-    */
     int nallsq = nall*nall;
     std::complex<double> myiota {0, 1};
     xt::xtensor<complex<double>,2> term;
@@ -138,8 +129,6 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
     stars_s = xt::eval(xt::transpose(stars_s));
     stars_a = xt::eval(xt::transpose(stars_a));
     stars_sa = stars_s * stars_a;
-    //cout<<"stars_sa"<<stars_sa<<endl;
-    //#pragma omp parallel for private(iii) //shared(den,x)
     int iii,tid,nthreads,s,a;
     auto t_start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel shared(nthreads) private(tid,s,a,iii,term)
@@ -159,13 +148,8 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
         int u = nzcol[tu];// u = lh.nzcol[tu]
         int b = nzrow[bc];// b = lh.nzrow[bc]
         int c = nzcol[bc];// c = lh.nzcol[bc]
-        //CmplxMat term;
-        //Eigen::MatrixXcd term = Eigen::MatrixXcd::Zero(16,ntrain-2);
+
         term = xt::zeros<complex<double>>({16, ntrain-2});
-        /*TO DO LIST
-        get term calculations conjugate ?
-        */
-        
         if (t==b)
         xt::view(term,0,xt::all()) = xt::sum(xt::view(den,xt::all(),u,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);
         else
@@ -312,25 +296,19 @@ Eigen::MatrixXd calc(const py::list& all,const py::list& realdof,const py::list&
     }
         
     } //end of parallel region
-    SpMat M(hesslen,hesslen),M1(hesslen,hesslen);
-    Eigen::MatrixXd M2(hesslen,hesslen);
-    cout<<"here"<<endl;
+    SpMat M(hesslen,hesslen);
     M.setFromTriplets(tripletList.begin(), tripletList.end());
-    //M1 = matrixXd(M);
-    M1 = M.selfadjointView<Eigen::Upper>(); 
-    cout<<"Sparse Matrix"<<M1<<endl;
-    M2 = Eigen::MatrixXd(M1);
+    //M1 = M.selfadjointView<Eigen::Upper>(); 
+    //M2 = Eigen::MatrixXd(M1);
     auto t_end = std::chrono::high_resolution_clock::now();
     cout<<"Wall clock time passed: " << std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
-    //std::vector<size_t> shape = { hesslen,hesslen };
-    //xt::xarray<double,xt::layout_type::dynamic> hessmat (shape);
-    xt::pyarray<double> hessmat;
-    hessmat = xt::zeros<double>({hesslen,hesslen});
-    // hessmat = hesselement;
-    // xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hessmat,xt::range(0,nnzr),xt::range(nnzr,_)));
-    // xt::view(hessmat,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))) = xt::transpose(xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)));
-    //cout<<"Hessian Matrix"<<hessmat<<endl;
-    return M2;  
+    Eigen::VectorXd theta ;
+    //theta = M2.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(-grad);
+    //Eigen::SparseQR<SpMat,Eigen::NaturalOrdering<int>> solver;
+    Eigen::ConjugateGradient<SpMat,Eigen::Upper> cg;
+    cg.compute(M);
+    theta = cg.solve(-grad);
+    return theta;  
 }
 //This was just a test
 Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXcd>& a){
@@ -355,10 +333,6 @@ Eigen::VectorXd myfunc(const Eigen::Ref<const Eigen::MatrixXcd>& a){
     Eigen::LeastSquaresConjugateGradient<SpMat> solver;
     solver.compute(M);
     x = solver.solve(c);
-    
-
-    //std::cout<<a.real()<<std::endl;
-    // //std::cout<<"print row number"<<a<<std::endl;
     return x;
 }
 };
