@@ -145,9 +145,9 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
     {
         tid = omp_get_thread_num();
         if (tid == 0){
-        nthreads = omp_get_num_threads();
-        printf("Starting with %d threads\n",nthreads);
-        printf("Term calculation...\n");
+            nthreads = omp_get_num_threads();
+            printf("Starting with %d threads\n",nthreads);
+            printf("Term calculation...\n");
         }
     #pragma omp for
     for (iii=0; iii<nallsq; iii++){
@@ -165,66 +165,66 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
         */
         
         if (t==b)
-        xt::view(term,0,xt::all()) = xt::sum(xt::view(den,xt::all(),u,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);
+            xt::view(term,0,xt::all()) = xt::sum(xt::view(den,xt::all(),u,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);
         else
-        xt::view(term,0,xt::all()) = 0;
+            xt::view(term,0,xt::all()) = 0;
         if ((t==c)*(b<c))
-        xt::view(term,1,xt::all()) = xt::sum(xt::view(den,xt::all(),u,xt::all())*xt::conj(xt::view(den,xt::all(),b,xt::all())),1);
+            xt::view(term,1,xt::all()) = xt::sum(xt::view(den,xt::all(),u,xt::all())*xt::conj(xt::view(den,xt::all(),b,xt::all())),1);
         else
-        xt::view(term,1,xt::all()) = 0;
+            xt::view(term,1,xt::all()) = 0;
         xt::view(term,2,xt::all()) = -xt::view(den,xt::all(),u,c)*xt::conj(xt::view(den,xt::all(),t,b));
         if (b<c)
-        xt::view(term,3,xt::all()) = -xt::view(den,xt::all(),u,b)*xt::conj(xt::view(den,xt::all(),t,c));
+            xt::view(term,3,xt::all()) = -xt::view(den,xt::all(),u,b)*xt::conj(xt::view(den,xt::all(),t,c));
         else
-        xt::view(term,3,xt::all()) = 0;
+            xt::view(term,3,xt::all()) = 0;
         /*-------------------------------------------------------------------------------------------------------------------------*/
         if ((u==b)*(t<u))
-        xt::view(term,4,xt::all()) = xt::sum(xt::view(den,xt::all(),t,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);
+            xt::view(term,4,xt::all()) = xt::sum(xt::view(den,xt::all(),t,xt::all())*xt::conj(xt::view(den,xt::all(),c,xt::all())),1);
         else
-        xt::view(term,4,xt::all()) = 0;
+            xt::view(term,4,xt::all()) = 0;
         if ((u==c)*(t<u)*(b<c))
-        xt::view(term,5,xt::all()) = xt::sum(xt::view(den,xt::all(),t,xt::all())*xt::conj(xt::view(den,xt::all(),b,xt::all())),1);
+            xt::view(term,5,xt::all()) = xt::sum(xt::view(den,xt::all(),t,xt::all())*xt::conj(xt::view(den,xt::all(),b,xt::all())),1);
         else
-        xt::view(term,5,xt::all()) = 0;
+            xt::view(term,5,xt::all()) = 0;
         if (t<u)
-        xt::view(term,6,xt::all()) = -xt::view(den,xt::all(),t,c)*xt::conj(xt::view(den,xt::all(),u,b));
+            xt::view(term,6,xt::all()) = -xt::view(den,xt::all(),t,c)*xt::conj(xt::view(den,xt::all(),u,b));
         else
-        xt::view(term,6,xt::all()) = 0;
+            xt::view(term,6,xt::all()) = 0;
         if ((t<u)*(b<c))
-        xt::view(term,7,xt::all()) = -xt::view(den,xt::all(),t,b)*xt::conj(xt::view(den,xt::all(),u,c));
+            xt::view(term,7,xt::all()) = -xt::view(den,xt::all(),t,b)*xt::conj(xt::view(den,xt::all(),u,c));
         else
-        xt::view(term,7,xt::all()) = 0;
+            xt::view(term,7,xt::all()) = 0;
         /*------------------------------------------------------------------------------------------------------------------------*/
         xt::view(term,8,xt::all()) = -xt::view(den,xt::all(),b,t)*xt::conj(xt::view(den,xt::all(),c,u));
         if (b<c)
-        xt::view(term,9,xt::all()) = -xt::view(den,xt::all(),c,t)*xt::conj(xt::view(den,xt::all(),b,u));
+            xt::view(term,9,xt::all()) = -xt::view(den,xt::all(),c,t)*xt::conj(xt::view(den,xt::all(),b,u));
         else
-        xt::view(term,9,xt::all()) = 0;
+            xt::view(term,9,xt::all()) = 0;
         if (u==c)
-        xt::view(term,10,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),t)*xt::conj(xt::view(den,xt::all(),xt::all(),b)),1);
+            xt::view(term,10,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),t)*xt::conj(xt::view(den,xt::all(),xt::all(),b)),1);
         else
-        xt::view(term,10,xt::all()) = 0;
+            xt::view(term,10,xt::all()) = 0;
         if ((u==b)*(b<c))
-        xt::view(term,11,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),t)*xt::conj(xt::view(den,xt::all(),xt::all(),c)),1);
+            xt::view(term,11,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),t)*xt::conj(xt::view(den,xt::all(),xt::all(),c)),1);
         else
-        xt::view(term,11,xt::all()) = 0;
+            xt::view(term,11,xt::all()) = 0;
         /*----------------------------------------------------------------------------------------------------------------------------*/
         if (t<u)
-        xt::view(term,12,xt::all()) = -xt::view(den,xt::all(),b,u)*xt::conj(xt::view(den,xt::all(),c,t));
+            xt::view(term,12,xt::all()) = -xt::view(den,xt::all(),b,u)*xt::conj(xt::view(den,xt::all(),c,t));
         else
-        xt::view(term,12,xt::all()) = 0;
+            xt::view(term,12,xt::all()) = 0;
         if ((b<c)*(t<u))
-        xt::view(term,13,xt::all()) = -xt::view(den,xt::all(),c,u)*xt::conj(xt::view(den,xt::all(),b,t));
+            xt::view(term,13,xt::all()) = -xt::view(den,xt::all(),c,u)*xt::conj(xt::view(den,xt::all(),b,t));
         else
-        xt::view(term,13,xt::all()) = 0;
+            xt::view(term,13,xt::all()) = 0;
         if ((t==c)*(t<u))
-        xt::view(term,14,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),u)*xt::conj(xt::view(den,xt::all(),xt::all(),b)),1);
+            xt::view(term,14,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),u)*xt::conj(xt::view(den,xt::all(),xt::all(),b)),1);
         else
-        xt::view(term,14,xt::all()) = 0;
+            xt::view(term,14,xt::all()) = 0;
         if ((t==b)*(t<u)*(b<c))
-        xt::view(term,15,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),u)*xt::conj(xt::view(den,xt::all(),xt::all(),c)),1);
+            xt::view(term,15,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),u)*xt::conj(xt::view(den,xt::all(),xt::all(),c)),1);
         else
-        xt::view(term,15,xt::all()) = 0;
+            xt::view(term,15,xt::all()) = 0;
         //cout<<"term"<<term<<endl;
         term = xt::eval(term);
         /*----------------------------------------------------------------------------------------------------------------------------*/
