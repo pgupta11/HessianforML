@@ -18,6 +18,7 @@ import os
 import Hess 
 from functools import partial
 from sklearn import linear_model   #For LASSO
+import argparse
 # A global dictionary storing the variables passed from the initializer.
 var_dict = {}
 
@@ -1171,11 +1172,15 @@ def computehess(lh):
     return hessmat
 
 if __name__ == '__main__':
-    mol = 'heh+'
-    basis = '6-31g'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--molecule', metavar='m', type=str, help='Choose from molecules, currently supports c2h4 and heh+', default='heh+')
+    parser.add_argument('--basis',metavar = 'b', type=str, help='Choose from basis sets sto3g and 6-31g', default='6-31g')
+    args = parser.parse_args()
+    mol = args.molecule
+    basis = args.basis
     mlham = LearnHam(mol,basis,'./'+mol+'LINEAR_6-31g/')
-    mlham.load('../../data/heh+/6-31g/extracted_data/')
-    mlham.loadfield('../../data/heh+/6-31g/extracted_data/')
+    mlham.load('data_files/'+mol+'/6-31g/extracted_data/')
+    mlham.loadfield('data_files/'+mol+'/6-31g/extracted_data/')
     mlham.trainsplit()
     mlham.buildmodel()
     
