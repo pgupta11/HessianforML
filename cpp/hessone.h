@@ -335,27 +335,33 @@ class hessone{
     // Wrote a function to solve the IVP using sparsematrix solver
     xt::pyarray<double> ConjGradSolver(xt::pyarray<double>& hessmat, xt::pyarray<double>& grad){   
         
-        xt::pyarray<double> Pyarraysol;
+        xt::pyarray<double> Pyarraysol(hesslen);
         hessmatSparse hessmatsparse(hesslen, hesslen);
+        Eigen::VectorXd solution(hesslen);
+        ConjugateGradient cg;
+        Eigen::VectorXd gradVec(hesslen);
+        cout<<"Here";
         for(int i=0;i<hesslen;i++){
             for(int j=0; j<hesslen; j++){
                 hessmatsparse.insert(i,j) = hessmat(i,j);
             }
         }
-        Eigen::VectorXd gradVec(hesslen);
+        cout<<"Here";
         int k=0;
         for (auto item:grad){
             gradVec(k) = item;
             k++;
         }
-        //  = xt::cast<Eigen::SparseMatrix<double>>(hessmat)
-        Eigen::VectorXd solution(hesslen);
-        ConjugateGradient cg;
+
+        
+        
         cg.compute(hessmatsparse);
         solution = cg.solve(gradVec);
         
+        k=0;
         for (auto element:solution){
             Pyarraysol(k) = element;
+            k++;
 
         }
         return Pyarraysol;
