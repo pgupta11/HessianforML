@@ -7,6 +7,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/SparseQR>
+#include <Eigen/IterativeLinearSolvers>  
 #define XTENSOR_USE_OPENMP
 #define XTENSOR_USE_XSIMD
 #include "xsimd/xsimd.hpp"
@@ -40,11 +41,12 @@ class hessone{
     private:
     int nnzr,nnzi,ndof,hesslen,nall,ntrain,drc;
     public:
-    typedef Eigen::SparseMatrix<double> SpMat;
+    typedef Eigen::SparseMatrix<double> hessmatSparse;
     typedef Eigen::Triplet<double> T;
     typedef Eigen::Matrix<double, 10, 1> Mat;
     //typedef Eigen::Matrix<complex<double>, 16, ntrain-2> CmplxMat;
     typedef vector< tuple<int,int> > TupleList;
+    typedef Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> ConjugateGradient;
     //Definitions for constructor and member functions 
     hessone(int real, int imag, int dofs, int train, int rowcolumn){
 
@@ -97,7 +99,9 @@ class hessone{
             imagnzs.push_back(t);
         }
         int nall = allnzs.size();
-        //cout<<"from cpp"<<nall<<"nnzr"<<nnzr<<"nnzi"<<nnzi<<"ndof"<<ndof<<endl;
+        cout<<"from cpp:\t"<<nall<<"nnzr:\t"<<nnzr<<"nnzi:\t"<<nnzi<<"ndof:\t"<<ndof<<endl;
+        cout<<"the all"<<endl;
+        // py::print(all);
         vector<int> nzrow(nall,0),nzcol(nall,0);
         for (int i = 0;i<nzrow.size();i++){
             nzrow[i] = get<0>(allnzs[i]);
@@ -124,11 +128,11 @@ class hessone{
             nzimagm(i,j) = cnt;
             cnt +=1;
         }
-        /*
-        Debug: checked following:
-        cout<<"Checking nzrealm" <<nzrealm<<endl;
-        cout<<"Checking nzimagm" <<nzimagm<<endl;
-        */
+        
+        // Debug: checked following:
+        // cout<<"Checking nzrealm" <<nzrealm<<endl;
+        // cout<<"Checking nzimagm" <<nzimagm<<endl;
+        
         int nallsq = nall*nall;
         std::complex<double> myiota {0, 1};
         xt::xtensor<complex<double>,2> term;
@@ -140,7 +144,7 @@ class hessone{
         stars_s = xt::eval(xt::transpose(stars_s));
         stars_a = xt::eval(xt::transpose(stars_a));
         stars_sa = stars_s * stars_a;
-        //cout<<"stars_sa"<<stars_sa<<endl;
+        // cout<<"stars_sa"<<stars_sa<<endl;
         //#pragma omp parallel for private(iii) //shared(den,x)
         int iii,tid,nthreads,s,a;
         auto t_start = std::chrono::high_resolution_clock::now();
@@ -229,7 +233,7 @@ class hessone{
                     xt::view(term,15,xt::all()) = xt::sum(xt::view(den,xt::all(),xt::all(),u)*xt::conj(xt::view(den,xt::all(),xt::all(),c)),1);
                 else
                     xt::view(term,15,xt::all()) = 0;
-                //cout<<"term"<<term<<endl;
+                // cout<<"term"<<term<<endl;
                 term = xt::eval(term);
                 /*----------------------------------------------------------------------------------------------------------------------------*/
                 int row00,col00,row01,col01,row02,col02,row11,col11,row12,col12,row22,col22;
@@ -304,16 +308,19 @@ class hessone{
         hessmat = hesselement;
         xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hessmat,xt::range(0,nnzr),xt::range(nnzr,_)));
         xt::view(hessmat,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))) = xt::transpose(xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)));
-        //cout<<"Hessian Matrix"<<hessmat<<endl;
+        // cout<<"Hessian Matrix"<<hessmat<<endl;
         return hessmat;
     }
     /* This function computes the hessian vector product.
+    Input Parameters
     const py::list& all 
     const py::list& realdof
     const py::list& imagdof
     xt::pyarray<complex<double>>& den
     xt::pyarray<double>& x
     <Not entirely sure what each term is for>
+    Output Params:
+    xt::pyarray<double> hessVec
     */
     xt::pyarray<double> HessVecProd(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
         
@@ -322,6 +329,35 @@ class hessone{
         hessVec = xt::zeros<double>({1,hesslen});
 
 
-        return hessvec
+        return hessVec;
+    }
+    
+    // Wrote a function to solve the IVP using sparsematrix solver
+    xt::pyarray<double> ConjGradSolver(xt::pyarray<double>& hessmat, xt::pyarray<double>& grad){   
+        
+        xt::pyarray<double> Pyarraysol;
+        hessmatSparse hessmatsparse(hesslen, hesslen);
+        for(int i=0;i<hesslen;i++){
+            for(int j=0; j<hesslen; j++){
+                hessmatsparse.insert(i,j) = hessmat(i,j);
+            }
+        }
+        Eigen::VectorXd gradVec(hesslen);
+        int k=0;
+        for (auto item:grad){
+            gradVec(k) = item;
+            k++;
+        }
+        //  = xt::cast<Eigen::SparseMatrix<double>>(hessmat)
+        Eigen::VectorXd solution(hesslen);
+        ConjugateGradient cg;
+        cg.compute(hessmatsparse);
+        solution = cg.solve(gradVec);
+        
+        for (auto element:solution){
+            Pyarraysol(k) = element;
+
+        }
+        return Pyarraysol;
     }
 };
