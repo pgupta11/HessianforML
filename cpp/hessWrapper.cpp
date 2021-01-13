@@ -18,5 +18,6 @@ PYBIND11_MODULE(Hess, m) {
     pybind11::class_<hessone>(m, "hessone")
         .def(pybind11::init<int, int, int, int, int>())  // if the constructor takes a int double etc then it goes here <>
         .def("test", &hessone::test)
-        .def("calc", &hessone::calc);
+        .def("calc", &hessone::calc)
+	.def("ConjGradSolver",&hessone::ConjGradSolver);
 }

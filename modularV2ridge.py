@@ -465,6 +465,12 @@ class LearnHam:
         print('Matrix Rank',np.linalg.matrix_rank(self.hess))
         return True
 
+    def cpppropagate(self):
+        print(self.grad)
+        h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain,self.drc)
+        sol = h.ConjGradSolver(self.hesscpp, self.grad)
+        return sol
+
 
     # TRAIN AND SAVE theta TO DISK
     def trainmodel(self, savetodisk=True):
@@ -1178,6 +1184,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     mol = args.molecule
     basis = args.basis
+    print('Selected molecule:'+args.molecule)
+    print('Selected basis:'+args.basis)
     mlham = LearnHam(mol,basis,'./'+mol+'LINEAR_6-31g/')
     mlham.load('data_files/'+mol+'/6-31g/extracted_data/')
     mlham.loadfield('data_files/'+mol+'/6-31g/extracted_data/')
@@ -1185,18 +1193,18 @@ if __name__ == '__main__':
     mlham.buildmodel()
     
     # function outside LearnHam class that computes the gradient
-    #mygrad = computegrad(mlham)
+    mygrad = computegrad(mlham)
     # set the gradient inside the object
-    #mlham.setgrad(mygrad)
+    mlham.setgrad(mygrad)
 
     # function outside LearnHam class that computes the Jacobian
-    #myjac = computejac(mlham)
+    myjac = computejac(mlham)
     # set the Jacobian inside the object 
-    #mlham.setjac(myjac)
+    mlham.setjac(myjac)
 
     #if you've already computed the Jacobian, you can obtain the Hessian
     #using the following beautiful formula
-    #hess2 = 2.0*np.conj(myjac.T) @ myjac
+    hess2 = 2.0*np.conj(myjac.T) @ myjac
     
     # function outside LearnHam class that computes the Hessian
     # does not need and does not compute either the gradient or the Jacobian
@@ -1205,33 +1213,34 @@ if __name__ == '__main__':
     mlham.sethess(hess)
     mlham.hessfromcpp()
 
-    #print('difference between two ways to compute Hessian:')
-    #print(np.linalg.norm(hess - hess2))
-    #print('******')
-    #mlham.trainmodel()
-    #print('Training loss',mlham.trainloss)
-    #print('Grad loss',mlham.gradloss)
+    print('difference between two ways to compute Hessian:')
+    print(np.linalg.norm(hess - hess2))
+    print('******')
+    mlham.trainmodel()
+    print('Training loss',mlham.trainloss)
+    print('Grad loss',mlham.gradloss)
     
-    # mlham.plottrainfits()
-    # mlham.plotvalidfits()
-    # mlham.computeMLtrainham()
-    # mlham.plottrainhamerr()
+    mlham.plottrainfits()
+    mlham.plotvalidfits()
+    mlham.computeMLtrainham()
+    mlham.plottrainhamerr()
 
     # propagate using ML Hamiltonian with no field
     #MLsol = mlham.propagate(mlham.MLhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
 
     # propagate using Exact Hamiltonian with no field
-    #EXsol = mlham.propagate(mlham.EXhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
+    EXsol = mlham.cpppropagate()
 
+    
     # quantitatively and graphically compare the trajectories we just obtained against denMO
     # bigger figure for LiH
-    # err = mlham.quantcomparetraj(MLsol, EXsol, mlham.denMO)
-    # print('MLsol,EXsol,..',err)
-    # if mol == 'lih':
-    #     fs = (8,16)
-    # else:
-    #     fs = (8,12)
-    # mlham.graphcomparetraj(MLsol, EXsol, mlham.denMO, fs)
+    err = mlham.quantcomparetraj(MLsol, EXsol, mlham.denMO)
+    print('MLsol,EXsol,..',err)
+    if mol == 'lih':
+        fs = (8,16)
+    else:
+        fs = (8,12)
+    mlham.graphcomparetraj(MLsol, EXsol, mlham.denMO, fs)
 
     # # propagate using ML Hamiltonian with field
     # MLsolWF = mlham.propagate(mlham.MLhamwfrhs, mlham.fielddenMOflat[mlham.offset,:], mytol=1e-10)
