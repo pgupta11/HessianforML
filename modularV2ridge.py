@@ -1236,10 +1236,10 @@ if __name__ == '__main__':
     mlham.plottrainhamerr()
 
     # propagate using ML Hamiltonian with no field
-    #MLsol = mlham.propagate(mlham.MLhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
+    MLsol = mlham.propagate(mlham.MLhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
 
     # propagate using Exact Hamiltonian with no field
-    EXsol = mlham.propagate()
+    EXsol = mlham.propagate(mlham.EXhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
 
     
     # quantitatively and graphically compare the trajectories we just obtained against denMO
