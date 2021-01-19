@@ -58,7 +58,7 @@ class LearnHam:
     def load(self,inpath):
         # store the path to input files, i.e., training data, auxiliary matrices, etc
         inpath = inpath
-        rawden = np.load(inpath + 'td_dens_re+im_rt-tdexx_delta_s0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
+        rawden = np.load(inpath + 'td_dens_re+im_tdcasscf22_delta_s0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
         overlap = np.load(inpath + 'ke+en+overlap+ee_twoe+dip_hf_delta_s0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
 
         # put things into better variables
@@ -163,9 +163,12 @@ class LearnHam:
     def loadfield(self,inpath):
 #         fielddata = np.load(inpath + 'td_efield+dipole_rt-tdexx_ndlaser1cycs0_'+self.mol+'_'+self.basis+'.npz')
 #         self.efdat = fielddata['td_efield_data']
-        fielddens = np.load(inpath + 'td_dens_re+im_rt-tdexx_ndlaser1cycs0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
-        self.fieldden = fielddens['td_dens_re_data'] + 1j*fielddens['td_dens_im_data']
+        fielddata = np.load(inpath + 'td_efield_tdcasscf22_ndlaser1cyc_s0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
+        self.efdat = fielddata['td_efield_data']
 
+        fielddens = np.load(inpath + 'td_dens_re+im_tdcasscf22_ndlaser1cyc_s0_'+self.mol+'_sto-3g.npz',allow_pickle=True)
+        self.fieldden = fielddens['td_dens_re_data'] + 1j*fielddens['td_dens_im_data']
+        
         # change basis from AO to orthogonalization of AO (called MO here)
         fielddenMO = np.zeros(self.fieldden.shape, dtype=np.complex128)
         for i in range(self.fieldden.shape[0]):
@@ -658,6 +661,9 @@ class LearnHam:
     # MACHINE LEARNED deltakick Hamiltonian, NO FIELD
     # this function is defined for propagation purposes
     def MLhamrhs(self, t, pin):
+        index = int(t//self.dt)
+        ez = self.efdat.T[index][2]
+        hfieldAO = np.array(ez*self.didat[2], dtype=np.complex128)
         p = pin.reshape(self.drc,self.drc)
         
         # MACHINE LEARNED deltakick Hamiltonian
@@ -676,6 +682,7 @@ class LearnHam:
             h[ij[0], ij[1]] += (1J)*hflat[self.hamimags[ij]]
             h[ij[1], ij[0]] -= (1J)*hflat[self.hamimags[ij]]
         
+        h -= self.xmat.conj().T @ hfieldAO @ self.xmat
         rhs = (h @ p - p @ h)/(1j)
         return rhs.reshape(self.drc**2)
 
@@ -714,6 +721,9 @@ class LearnHam:
         else:
             ez = 0.05*np.sin(0.0428*t)
 
+
+        index = int(t//self.dt)
+        ez = self.efdat.T[index][2]
         hfieldAO = np.array(ez*self.didat[2], dtype=np.complex128)
 
         p = pin.reshape(self.drc,self.drc)
@@ -1179,16 +1189,16 @@ def computehess(lh):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--molecule', metavar='m', type=str, help='Choose from molecules, currently supports c2h4 and heh+', default='heh+')
-    parser.add_argument('--basis',metavar = 'b', type=str, help='Choose from basis sets sto3g and 6-31g', default='6-31g')
+    parser.add_argument('--molecule', metavar='m', type=str, help='Choose from molecules, currently supports c2h4 and heh+', default='h2')
+    parser.add_argument('--basis',metavar = 'b', type=str, help='Choose from basis sets sto-3g and 6-31g', default='sto-3g')
     args = parser.parse_args()
     mol = args.molecule
     basis = args.basis
     print('Selected molecule:'+args.molecule)
     print('Selected basis:'+args.basis)
-    mlham = LearnHam(mol,basis,'./'+mol+'LINEAR_6-31g/')
-    mlham.load('data_files/'+mol+'/6-31g/extracted_data/')
-    mlham.loadfield('data_files/'+mol+'/6-31g/extracted_data/')
+    mlham = LearnHam(mol,basis,'./'+mol+'LINEAR_'+args.basis+'/')
+    mlham.load('data_files/data_files/hf/extracted_data/')
+    mlham.loadfield('data_files/data_files/hf/extracted_data/')
     mlham.trainsplit()
     mlham.buildmodel()
     
@@ -1229,7 +1239,7 @@ if __name__ == '__main__':
     #MLsol = mlham.propagate(mlham.MLhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
 
     # propagate using Exact Hamiltonian with no field
-    EXsol = mlham.cpppropagate()
+    EXsol = mlham.propagate()
 
     
     # quantitatively and graphically compare the trajectories we just obtained against denMO
