@@ -75,7 +75,7 @@ void test(){
   }
 }
 
-xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x){
+xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::list& imagdof,xt::pyarray<complex<double>>& den,xt::pyarray<double>& x, xt::pyarray<double>& vec){
     /* TO DO LIST--->Debug
     hesslen, nall, allzs-->cout << "("<<get<0>(t) << " " << get<1>(t)<<")"<<endl;
     verify nzrow and nzcol
@@ -130,7 +130,8 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
     std::complex<double> myiota {0, 1};
     xt::xtensor<complex<double>,2> term;
     xt::xtensor<double,2> hesselement;
-    hesselement = xt::eval(xt::zeros<double>({hesslen,hesslen}));
+    //hesselement = xt::eval(xt::zeros<double>({hesslen,hesslen}));
+    hesselement = xt::eval(xt::zeros<double>({hesslen,1}));
     xt::xarray<complex<double>>stars_s = {{1,1,1,1,-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1}};
     xt::xarray<complex<double>>stars_a={{-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1}};
     xt::xarray<complex<double>>stars_sa;
@@ -237,17 +238,17 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     // no extra factor for 00 block
                     row00 = nzrealm(t,u);
                     col00 = nzrealm(b,c);
-                    hesselement(row00,col00) = 2*xt::real(xt::sum(term)[0]);
-                    //hesselement(row00,col00) = 2*xt::sum(xt::real(term))[0];
+                    //hesselement(row00,col00) = 2*xt::real(xt::sum(term)[0]);
+                    hesselement(row00,1) = 2*xt::real(xt::sum(term)[0])*vec[col00];
                     }
                 if ((s==0)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // work on the 01 block
                     term01 = term*xt::view(x,xt::all(),a);
                     row01 = nzrealm(t,u);
                     col01 = (a+1)*nnzr+nzrealm(b,c);
-                    hesselement(row01,col01) = 2*xt::real(xt::sum(term01)[0]);
-                    //hesselement(row01,col01) = 2*xt::sum(xt::real(term01))[0];
-                    //if(hesselement(row01,col01)==0) cout<<"row01,col01"<<row01<<","<<col01<<endl;
+                    //hesselement(row01,col01) = 2*xt::real(xt::sum(term01)[0]);
+                    hesselement(row01,1) = hesselement(row01,1)+ 2*xt::real(xt::sum(term01)[0])*vec[col01];
+                    hesselement(col01,1) = 2*xt::real(xt::sum(term01)[0])*vec[row01];
                     }
                 if ((s==0)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzimagm(b,c)>=0)){
                     // work on the 02 block
@@ -257,7 +258,9 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     //term02 = xt::eval(term02);
                     row02 = nzrealm(t,u);
                     col02 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
-                    hesselement(row02,col02) = 2*xt::real(xt::sum(term02)[0]);
+                    //hesselement(row02,col02) = 2*xt::real(xt::sum(term02)[0]);
+                    hesselement(row02,1) = hesselement(row02,1)+2*xt::real(xt::sum(term02)[0])*vec[col02];
+                    hesselement(col02,1) = 2*xt::real(xt::sum(term02)[0])*vec[row02];
                     }
                 if ((s<nnzr)&&(a<nnzr)&&(nzrealm(t,u)>=0)&&(nzrealm(b,c)>=0)){
                     // overall factor for 11 block
@@ -265,7 +268,8 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     //term11 = xt::eval(term11);
                     row11 = (s+1)*nnzr+nzrealm(t,u);
                     col11 = (a+1)*nnzr+nzrealm(b,c);
-                    hesselement(row11,col11) = 2*xt::real(xt::sum(term11)[0]);
+                    //hesselement(row11,col11) = 2*xt::real(xt::sum(term11)[0]);
+                    hesselement(row11,1) = hesselement(row11,1)+2*xt::real(xt::sum(term11)[0])*vec[col11];
                     }
                 if ((s<nnzr)&&(a>=nnzr)&&(nzrealm(t,u)>=0)&&(nzimagm(b,c)>=0)){
                     // work on the 12 block
@@ -274,7 +278,9 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     term12 = term12*xt::view(x,xt::all(),s)*(myiota)*xt::view(x,xt::all(),a);
                     row12 = (s+1)*nnzr+nzrealm(t,u);
                     col12 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
-                    hesselement(row12,col12) = 2*xt::real(xt::sum(term12)[0]);
+                    //hesselement(row12,col12) = 2*xt::real(xt::sum(term12)[0]);
+                    hesselement(row12,1) = hesselement(row12,1)+2*xt::real(xt::sum(term12)[0])*vec[col12];
+                    hesselement(col12,1) = hesselement(col12,1)+2*xt::real(xt::sum(term12)[0])*vec[row12];
                     }
                 if ((s>=nnzr)&&(a>=nnzr)&&(nzimagm(t,u)>=0)&&(nzimagm(b,c)>=0)){
                     // work on the 22 block
@@ -283,7 +289,8 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
                     term22 = term22*(myiota)*xt::view(x,xt::all(),s)*(myiota)*xt::view(x,xt::all(),a);
                     row22 = nnzr*nnzr+(s-nnzr)*nnzi+nzimagm(t,u);
                     col22 = nnzr*nnzr+(a-nnzr)*nnzi+nzimagm(b,c);
-                    hesselement(row22,col22) = 2*xt::real(xt::sum(term22)[0]);
+                    //hesselement(row22,col22) = 2*xt::real(xt::sum(term22)[0]);
+                    hesselement(row22,1) = 2*xt::real(xt::sum(term22)[0])*vec[col22];
                     }
             
             }    
@@ -295,12 +302,13 @@ xt::pyarray<double> calc(const py::list& all,const py::list& realdof,const py::l
     cout<<"Wall clock time passed: " << std::chrono::duration<double, std::milli>(t_end-t_start).count()<< " ms\n";
     //std::vector<size_t> shape = { hesslen,hesslen };
     //xt::xarray<double,xt::layout_type::dynamic> hessmat (shape);
-    xt::pyarray<double> hessmat;
-    hessmat = xt::zeros<double>({hesslen,hesslen});
-    hessmat = hesselement;
-    xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hessmat,xt::range(0,nnzr),xt::range(nnzr,_)));
-    xt::view(hessmat,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))) = xt::transpose(xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)));
-    //cout<<"Hessian Matrix"<<hessmat<<endl;
-    return hessmat;  
+    // xt::pyarray<double> hessmat;
+    // hessmat = xt::zeros<double>({hesslen,hesslen});
+    // hessmat = hesselement;
+    // xt::view(hessmat,xt::range(nnzr,_),xt::range(0,nnzr)) = xt::transpose(xt::view(hessmat,xt::range(0,nnzr),xt::range(nnzr,_)));
+    // xt::view(hessmat,xt::range(nnzr*(nnzr+1),_),xt::range(nnzr,nnzr*(nnzr+1))) = xt::transpose(xt::view(hessmat,xt::range(nnzr,nnzr*(nnzr+1)),xt::range(nnzr*(nnzr+1),_)));
+    //cout<<"Hessian Vector Product"<<hesselement<<endl;
+    return hesselement;  
 }
+
 };

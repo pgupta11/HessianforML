@@ -57,7 +57,7 @@ class LearnHam:
     def load(self,inpath):
         # store the path to input files, i.e., training data, auxiliary matrices, etc
         inpath = inpath
-        rawden = np.load(inpath + 'td_dens_re+im_rt-tdexx_delta_s0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
+        rawden = np.load(inpath + 'td_dens_re+im_tdcasscf22_delta_s0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
         overlap = np.load(inpath + 'ke+en+overlap+ee_twoe+dip_hf_delta_s0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
 
         # put things into better variables
@@ -160,9 +160,9 @@ class LearnHam:
     
     # load and process data with field
     def loadfield(self,inpath):
-#         fielddata = np.load(inpath + 'td_efield+dipole_rt-tdexx_ndlaser1cycs0_'+self.mol+'_'+self.basis+'.npz')
-#         self.efdat = fielddata['td_efield_data']
-        fielddens = np.load(inpath + 'td_dens_re+im_rt-tdexx_ndlaser1cycs0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
+        fieldDeltaKick = np.load(inpath + 'td_efield_tdcasscf22_delta_s0_'+self.mol+'_'+self.basis+'.npz')
+        self.fieldDK = fieldDeltaKick['td_efield_data']
+        fielddens = np.load(inpath + 'td_dens_re+im_tdcasscf22_ndlaser1cyc_s0_'+self.mol+'_'+self.basis+'.npz',allow_pickle=True)
         self.fieldden = fielddens['td_dens_re_data'] + 1j*fielddens['td_dens_im_data']
 
         # change basis from AO to orthogonalization of AO (called MO here)
@@ -449,46 +449,44 @@ class LearnHam:
     def sethess(self, inhess):
         self.hess = inhess.copy()
         return True
-    # def hessfromcpp(self):
-    #     h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain,self.drc)
-    #     # testing list 
-    #     start = time.time()
-    #     self.hesscpp = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
-    #     print('cpp calculation for Hessian',time.time()-start)
-    #     #print('python self.allnzs', self.allnzs)
-    #     print('HesscppPy',np.linalg.norm(self.hess-self.hesscpp))
-    #     #print('Hess Py',self.hess)
-    #     #print('Hess cpp',self.hesscpp)
-    #     np.savetxt('Hesscpp.txt', self.hesscpp, fmt="%8f")
-    #     np.savetxt('HessPy.txt', self.hess, fmt="%8f")
-    #     print('Matrix Rank',np.linalg.matrix_rank(self.hess))
-    #     return True
+    def hessfromcpp(self):
+        h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain,self.drc)
+        # testing list 
+        start = time.time()
+        self.hesscpp = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
+        print('cpp calculation for Hessian',time.time()-start)
+        #print('python self.allnzs', self.allnzs)
+        print('HesscppPy',np.linalg.norm(self.hess-self.hesscpp))
+        #print('Hess Py',self.hess)
+        #print('Hess cpp',self.hesscpp)
+        np.savetxt('Hesscpp.txt', self.hesscpp, fmt="%8f")
+        np.savetxt('HessPy.txt', self.hess, fmt="%8f")
+        print('Matrix Rank',np.linalg.matrix_rank(self.hess))
+        return True
 
 
     # TRAIN AND SAVE theta TO DISK
     def trainmodel(self, savetodisk=True):
         npts = self.denMO_train.shape[0]-self.offset
         # define zero vector in theta space
-        theta = np.zeros(self.lentheta)        
+        theta0 = np.zeros(self.lentheta)        
         
         # solve least squares minimization problem
         #self.theta,_,_,_ = sl.lstsq(self.hess, -self.grad, lapack_driver='gelsy')
         h = Hess.hessone(self.nnzr,self.nnzi,self.ndof,self.ntrain,self.drc)
-        # # testing list 
-        # start = time.time()
-        # self.hesscpp = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
-        # print('cpp calculation for Hessian',time.time()-start)
+        # testing list 
+        start = time.time()
+        self.hesscpp = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:])
+        print('cpp calculation for Hessian',time.time()-start)
 
         def cg(theta, epsilon=5e-3):
             self.qmat = self.computeqmat(theta)
             rk = -computegrad(self)
             pk = rk
-            lam=1e-06
-            print('pk shape',pk.shape)
             while(np.linalg.norm(rk)>epsilon):
                 
                 start = time.time()
-                hessvec = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:],pk) + 2 *lam*pk
+                hessvec = h.calc(self.allnzs,self.realnzs,self.imagnzs,self.denMO_train[1:(self.ntrain-1),:,:],self.x_inp_train[1:(self.ntrain-1),:],pk)
                 print('cpp calculation for Hessian',time.time()-start)
                 alphak = np.matmul(np.transpose(rk),rk)/np.matmul(np.transpose(pk),hessvec)
                 theta = theta + alphak*pk
@@ -646,7 +644,8 @@ class LearnHam:
     # this function is defined for propagation purposes
     def MLhamrhs(self, t, pin):
         p = pin.reshape(self.drc,self.drc)
-        
+        id = int(t//self.dt)
+        DKfieldAO = np.array(self.fieldDK[2,id]*self.didat[2], dtype=np.complex128)
         # MACHINE LEARNED deltakick Hamiltonian
         pflat = np.zeros(self.ndof, dtype=np.complex128)
         for ij in self.nzreals:
@@ -662,7 +661,7 @@ class LearnHam:
         for ij in self.hamimags:
             h[ij[0], ij[1]] += (1J)*hflat[self.hamimags[ij]]
             h[ij[1], ij[0]] -= (1J)*hflat[self.hamimags[ij]]
-        
+        h = -self.xmat.conj().T @ DKfieldAO @ self.xmat
         rhs = (h @ p - p @ h)/(1j)
         return rhs.reshape(self.drc**2)
 
@@ -763,7 +762,7 @@ class LearnHam:
     # here we compare the two trajectories GRAPHICALLY
     def graphcomparetraj(self, traj1, traj2, groundtruth, myfigsize=(8,16), includeField=False, fname='prop.pdf', mytitle=None):
 
-        n=5
+        n=2
         pls=0
         nzreals_keys=list(self.nzreals.keys())
         nzreals_values=list(self.nzreals.values())
@@ -1116,18 +1115,18 @@ def computehess(lh):
     return hessmat
 
 if __name__ == '__main__':
-    mol = 'heh+'
-    basis = '6-31g'
-    mlham = LearnHam(mol,basis,'./'+mol+'LINEAR_6-31g/')
-    mlham.load('../../data/heh+/6-31g/extracted_data/')
-    mlham.loadfield('../../data/heh+/6-31g/extracted_data/')
+    mol = 'h2'
+    basis = 'sto-3g'
+    mlham = LearnHam(mol,basis,'./'+mol+'LINEAR/')
+    mlham.load('/home/prachi/data/tdci/h2/sto-3g/')
+    mlham.loadfield('/home/prachi/data/tdci/h2/sto-3g/')
     mlham.trainsplit()
     mlham.buildmodel()
     
     # function outside LearnHam class that computes the gradient
-    #mygrad = computegrad(mlham)
+    mygrad = computegrad(mlham)
     # set the gradient inside the object
-    #mlham.setgrad(mygrad)
+    mlham.setgrad(mygrad)
 
     # function outside LearnHam class that computes the Jacobian
     #myjac = computejac(mlham)
@@ -1152,42 +1151,42 @@ if __name__ == '__main__':
     #print('Training loss',mlham.trainloss)
     #print('Grad loss',mlham.gradloss)
     
-    # mlham.plottrainfits()
-    # mlham.plotvalidfits()
-    # mlham.computeMLtrainham()
-    # mlham.plottrainhamerr()
+    mlham.plottrainfits()
+    mlham.plotvalidfits()
+    mlham.computeMLtrainham()
+    mlham.plottrainhamerr()
 
     # propagate using ML Hamiltonian with no field
-    #MLsol = mlham.propagate(mlham.MLhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
+    MLsol = mlham.propagate(mlham.MLhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
 
     # propagate using Exact Hamiltonian with no field
-    #EXsol = mlham.propagate(mlham.EXhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
+    EXsol = mlham.propagate(mlham.EXhamrhs, mlham.denMOflat[mlham.offset,:], mytol=1e-10)
 
     # quantitatively and graphically compare the trajectories we just obtained against denMO
     # bigger figure for LiH
-    # err = mlham.quantcomparetraj(MLsol, EXsol, mlham.denMO)
-    # print('MLsol,EXsol,..',err)
-    # if mol == 'lih':
-    #     fs = (8,16)
-    # else:
-    #     fs = (8,12)
-    # mlham.graphcomparetraj(MLsol, EXsol, mlham.denMO, fs)
+    err = mlham.quantcomparetraj(MLsol, EXsol, mlham.denMO)
+    print('MLsol,EXsol,..',err)
+    if mol == 'lih':
+        fs = (8,16)
+    else:
+        fs = (8,12)
+    mlham.graphcomparetraj(MLsol, EXsol, mlham.denMO, fs)
 
-    # # propagate using ML Hamiltonian with field
-    # MLsolWF = mlham.propagate(mlham.MLhamwfrhs, mlham.fielddenMOflat[mlham.offset,:], mytol=1e-10)
+    # propagate using ML Hamiltonian with field
+    MLsolWF = mlham.propagate(mlham.MLhamwfrhs, mlham.fielddenMOflat[mlham.offset,:], mytol=1e-10)
 
-    # # propagate using Exact Hamiltonian with field
-    # EXsolWF = mlham.propagate(mlham.EXhamwfrhs, mlham.fielddenMOflat[mlham.offset,:], mytol=1e-10)
+    # propagate using Exact Hamiltonian with field
+    EXsolWF = mlham.propagate(mlham.EXhamwfrhs, mlham.fielddenMOflat[mlham.offset,:], mytol=1e-10)
     
-    # # quantitatively and graphically compare the trajectories we just obtained against denMO
-    # # bigger figure for LiH
-    # errWF = mlham.quantcomparetraj(MLsolWF, EXsolWF, mlham.fielddenMO, 'tdHamerrWF.npz')
-    # print('With field',errWF)
-    # if mol == 'lih':
-    #     fs = (8,16)
-    #     infl = False
-    # else:
-    #     fs = (8,12)
-    #     infl = True
-    # mlham.graphcomparetraj(MLsolWF, EXsolWF, mlham.fielddenMO, fs, infl, 'propWF.pdf')
+    # quantitatively and graphically compare the trajectories we just obtained against denMO
+    # bigger figure for LiH
+    errWF = mlham.quantcomparetraj(MLsolWF, EXsolWF, mlham.fielddenMO, 'tdHamerrWF.npz')
+    print('With field',errWF)
+    if mol == 'lih':
+        fs = (8,16)
+        infl = False
+    else:
+        fs = (8,12)
+        infl = True
+    mlham.graphcomparetraj(MLsolWF, EXsolWF, mlham.fielddenMO, fs, infl, 'propWF.pdf')
 
